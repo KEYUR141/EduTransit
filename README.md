@@ -51,8 +51,27 @@ GapMap does not replace APAAR, UDISE+, DIKSHA, PRABANDH or a school ERP.
 - DIKSHA provides curriculum content, quizzes and learning resources.
 - GapMap diagnoses readiness for a destination curriculum and sequences the missing prerequisites.
 
+## Run the connected prototype
+
+Start Django:
+
+    .\env\Scripts\Activate.ps1
+    cd backend\Gap
+    python manage.py migrate
+    python manage.py seed_gapmap_demo
+    python manage.py runserver
+
+In a second terminal, start React:
+
+    cd frontend
+    npm install
+    npm run dev
+
+Open http://127.0.0.1:5173. The header shows **API connected** when Django is reachable. New support requests are stored through /api/support-cases/. If Django is unavailable, the prototype explicitly labels the result as an offline demo.
+
 ## Documentation
 
+- [`backend/README.md`](backend/README.md) - API setup, demo journey and verification
 - [Unique selling proposition](USP.md)
 - [Product and delivery plan](plan.md)
 - [Technical architecture](tech.md)
@@ -66,13 +85,13 @@ GapMap does not replace APAAR, UDISE+, DIKSHA, PRABANDH or a school ERP.
 - [x] GapMap presentation prepared
 - [x] Initial product and technical plan prepared
 - [ ] Mathematics transition scope finalised with a teacher
-- [ ] Curriculum concept graph created
-- [ ] Diagnostic question bank prepared and reviewed
-- [ ] Backend and frontend scaffolded
-- [ ] Adaptive diagnostic implemented
-- [ ] Bridge-path generation implemented
+- [x] Demo curriculum concept graph created
+- [ ] Demo diagnostic question bank needs teacher review
+- [x] Backend API and frontend scaffolded
+- [x] Adaptive diagnostic implemented
+- [x] Gap-map and bridge-path generation implemented
 - [ ] Teacher dashboard completed
-- [ ] Prototype tested on prepared transition scenarios
+- [x] Backend prototype tested on prepared transition scenarios
 
 ## Official References
 
