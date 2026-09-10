@@ -1,120 +1,121 @@
-# EduSure — Unique Selling Proposition
+# GapMap Unique Selling Proposition
 
-## One-line USP
+## One-Line USP
 
-**EduSure is an education-continuity system that identifies why a student is at risk of leaving education, connects the student to verified support, assigns human responsibility, and tracks the case until learning becomes stable again.**
+**GapMap finds the earliest missing prerequisite that prevents a transitioning student from understanding the current lesson, then builds the shortest teacher-reviewed path back to classroom readiness.**
 
-## The real-life problem
+## The Real-Life Problem
 
-Many students do not leave school or college because they lack ability or interest. Their education is interrupted by practical and overlapping barriers such as:
+Admission continuity does not guarantee learning continuity.
 
-- inability to pay fees or examination charges;
-- unaffordable transport, hostel, books, uniforms or digital devices;
-- sudden loss or instability of family income;
-- missing or incorrect documents required for assistance;
-- migration that breaks admission records and access to local schemes;
-- lack of awareness about scholarships, government schemes and nearby support;
-- difficulty completing complicated applications;
-- applications that remain pending with nobody responsible for follow-up.
+A student may enter a new classroom after:
 
-These difficulties affect students from low-income and unstable-income households, migrant families, daily-wage families, first-generation learners, single-parent households, rural communities and students facing a sudden financial crisis.
+- changing state or school board;
+- changing medium of instruction;
+- moving between institutions;
+- returning after illness, migration or prolonged absence;
+- progressing to a higher class with unresolved foundational gaps.
 
-The problem is not simply that support programmes do not exist. Information and responsibility are fragmented. A student may have to search several portals, understand different eligibility rules, repeatedly submit documents and independently follow up with multiple institutions. A vulnerable student can therefore disappear from education even when suitable assistance exists.
+The learner can be enrolled, attend classes and possess complete academic records, yet remain unable to understand the current topic. Teachers often see a low score without knowing which prerequisite failed. Generic remedial work may repeat an entire chapter or grade even when only a small chain of concepts is missing.
 
-## What EduSure solves
+Language creates a second problem. A student may understand a concept in a familiar language but fail when the same idea uses unfamiliar English or technical vocabulary. A normal test can mistakenly label this as lack of subject knowledge.
 
-EduSure treats possible dropout as an **Education Continuity Case**, not merely as a scholarship search.
+## What GapMap Does
 
-The system follows a closed support loop:
+GapMap creates a curriculum transition map for each learner:
 
-1. **Raise a concern:** The student, parent, teacher or institution reports a risk to the student's education.
-2. **Assess the barriers:** EduSure records the financial, transport, device, documentation, migration or family-related difficulties involved.
-3. **Match verified support:** The platform recommends relevant scholarships, schemes, institutional assistance, NGOs and local services using the student's circumstances and eligibility.
-4. **Assist and assign responsibility:** It provides application guidance and assigns a counsellor or authorised case owner when human intervention is required.
-5. **Track delivery:** EduSure monitors applications, documents, deadlines, approvals and whether promised assistance actually reaches the student.
-6. **Confirm continuity:** The case closes only when the student's attendance or participation becomes stable. If the first intervention fails, the case returns for reassessment and follow-up.
+1. compares learning outcomes in the source and destination curricula;
+2. connects the destination topic to its prerequisite concepts;
+3. conducts a short adaptive diagnostic that moves backward only when needed;
+4. gathers separate evidence for concept understanding and academic-language understanding;
+5. locates the earliest weak prerequisite in the chain;
+6. generates the minimum ordered bridge path;
+7. allows a teacher to review, change and assign the path;
+8. reassesses the learner against the current classroom topic.
 
-## Why existing solutions are inadequate
+## Why Current Solutions Do Not Fully Address It
 
-Most scholarship and scheme portals are designed around programmes and applications. They usually stop after displaying information or accepting a form. They do not provide a unified view of the student's combined barriers, establish ownership of the case or verify that support prevented educational interruption.
+### APAAR
 
-Generic AI chatbots can answer questions, but an answer alone does not ensure that a document is corrected, an application is submitted, transport is arranged or a student returns to regular attendance.
+APAAR supports a learner's identity, academic records, achievements and credit mobility. GapMap addresses readiness for the curriculum encountered after that transition.
 
-## What makes EduSure different
+> **APAAR shows what the learner completed. GapMap determines which prerequisites the learner needs for what comes next.**
 
-**Opportunity discovery + assisted application + human case ownership + outcome tracking**
+### DIKSHA and learning platforms
 
-EduSure's USP is the closed-loop connection between early risk detection and a verified real-world outcome. Its success is measured not by the number of schemes displayed or forms submitted, but by whether the student remains in education.
+DIKSHA provides extensive curriculum content and assessments. Content availability does not automatically identify the smallest prerequisite chain causing today's difficulty. GapMap can link to verified learning material after it identifies that chain.
 
-### Key differentiators
+### School assessments
 
-- **Barrier-first approach:** Begins with the student's actual difficulty rather than asking the student to identify a scheme.
-- **Whole-student case:** Handles multiple connected barriers in one continuity case.
-- **Verified recommendations:** Explains why each opportunity matches and shows eligibility, required documents, deadline and source.
-- **Human-in-the-loop support:** Escalates sensitive, incomplete or unresolved cases to a responsible counsellor.
-- **End-to-end tracking:** Tracks the journey from concern to support delivery and educational stability.
-- **Outcome accountability:** Records whether the intervention worked and reopens unresolved cases.
-- **Inclusive access:** Can support multilingual, low-bandwidth and assisted-access workflows for students who cannot independently use complex portals.
+Grade-level tests show performance against a paper. GapMap traverses a dependency graph to determine why the current concept failed and where recovery should begin.
 
-## How AI is used responsibly
+### Generic AI tutors
 
-AI supports the workflow; it does not make final eligibility or dropout decisions.
+A chatbot can explain a topic but usually lacks a verified source-to-destination curriculum map, adaptive prerequisite diagnosis, teacher approval and readiness evidence. GapMap combines these elements in one workflow.
 
-- converts a student's explanation into structured barrier categories;
-- ranks relevant opportunities using eligibility evidence;
-- explains schemes and documents in simple, multilingual language;
-- detects missing information and upcoming deadlines;
-- summarises a case for counsellors and suggests the next action;
-- flags cases that require urgent human review.
+## Key Differentiators
 
-Every recommendation should link to its official or verified source. Final approval remains with the relevant authority, and high-risk decisions remain under human supervision.
+- **Cross-curriculum comparison:** Maps differences between boards, grades and media of instruction.
+- **Root prerequisite diagnosis:** Traces the failure to the earliest weak concept rather than stopping at the incorrect answer.
+- **Language-aware evidence:** Tests whether terminology or subject understanding caused the difficulty.
+- **Minimum bridge path:** Assigns only the prerequisite sequence needed for the destination topic.
+- **Teacher control:** Teachers approve concept links, questions and recovery plans.
+- **Readiness reassessment:** Measures whether the learner can now participate in the current classroom.
+- **Reusable public infrastructure:** Can reference approved learning outcomes and link to resources from systems such as DIKSHA instead of duplicating their content.
 
-## Who benefits
+## Why It Is a Complete Product
 
-### Students and families
+GapMap requires more than adding an AI button to an educational application. It combines:
 
-They receive one guided pathway instead of navigating disconnected systems alone. They can understand available help, complete required steps and see who is handling an unresolved case.
+- curriculum ingestion and versioning;
+- a concept dependency graph;
+- mapping between source and destination curricula;
+- a reviewed diagnostic question bank;
+- an adaptive assessment engine;
+- multilingual concept and terminology checks;
+- bridge-path generation;
+- teacher review and assignment;
+- mastery and readiness tracking.
 
-### Teachers and counsellors
+## Responsible Use of AI
 
-They gain a structured case view, priority alerts and follow-up history, allowing limited staff to focus on students who need intervention most.
+AI assists with curriculum mapping, question variation, multilingual explanations and diagnostic summaries. It does not independently declare that a student has a disability, lacks intelligence or should repeat a grade.
 
-### Schools and colleges
+Teachers validate curriculum links and diagnostic items. The interface shows why the system inferred a gap, what evidence supports it and how the teacher can correct the result.
 
-They can identify common barriers, monitor unresolved continuity risks and coordinate institutional assistance before students disengage.
+## Who Benefits
 
-### Government departments and support organisations
+### Students
 
-They receive anonymised insight into unmet needs, delivery gaps and recurring barriers, helping programmes reach eligible students more effectively.
+Students receive focused support for the concepts blocking today's learning instead of repeating large parts of the syllabus.
 
-## Prototype demonstration
+### Teachers
 
-The hackathon prototype should demonstrate one complete student journey:
+Teachers see a map of likely prerequisite gaps, supporting evidence and an editable recovery path. They can also group learners who share the same missing concept.
 
-1. a student reports that education may stop because of fees, transport and missing income documentation;
-2. the system creates a continuity case and assesses the combined barriers;
-3. verified support options are ranked with explanations;
-4. the platform generates an action checklist and routes the case to a counsellor;
-5. the dashboard tracks documents, application status and intervention progress;
-6. the system records whether support was delivered and attendance stabilised;
-7. if the issue remains unresolved, the case automatically returns for follow-up.
+### Institutions
 
-## Impact measures
+Schools and colleges gain a structured transition-support process and can identify recurring curriculum mismatches without exposing individual learners in public analytics.
 
-EduSure can be evaluated using measurable outcomes:
+## Prototype Proof
 
-- percentage of at-risk students who remain enrolled and active;
-- average time from concern to first intervention;
-- percentage of cases receiving successful support;
-- reduction in incomplete applications and missed deadlines;
-- percentage of unresolved cases receiving human follow-up;
-- attendance or participation improvement after intervention;
-- most common barriers and unmet support needs.
+The prototype should show one student moving into a Class 9 mathematics curriculum. The learner answers a destination-level algebra question incorrectly. GapMap tests its prerequisites and determines that negative-number operations are weak while ratio knowledge exists but English terminology is unfamiliar. It then creates a short bridge path, links each step to reviewed content and reassesses the original algebra outcome.
 
-## Positioning statement
+## Success Measures
 
-> **Scholarship portals process applications. EduSure manages educational continuity.**
+- teacher agreement with the diagnosed root gap;
+- diagnostic questions avoided through adaptive pruning;
+- bridge concepts completed;
+- improvement on the destination learning outcome;
+- time required to reach classroom readiness;
+- recurring curriculum gaps across a transition cohort.
 
-## Suggested tagline
+Prototype results must be labelled as simulated or pilot results. Do not present them as population-level impact.
 
-**Keeping every student in education.**
+## Positioning Statement
+
+> **Most platforms teach the current chapter. GapMap identifies the missing prerequisite preventing the student from understanding it.**
+
+## Tagline
+
+**Find the gap. Build the bridge.**

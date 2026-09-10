@@ -1,234 +1,286 @@
-# EduSure Technical Plan
+# GapMap Technical Architecture
 
-## 1. Product Goal
+## 1. Technical Objective
 
-Build a software prototype that converts a student's risk of educational interruption into a trackable **Education Continuity Case**. The prototype must demonstrate the complete journey from reporting a barrier to confirming that support was delivered and education became stable.
+Build an explainable curriculum-transition diagnostic that:
 
-EduSure is not a scholarship directory, an academic-record repository or an AI chatbot. It is a case-management and support-orchestration platform.
+1. represents learning outcomes as a prerequisite graph;
+2. maps concepts between source and destination curricula;
+3. selects diagnostic questions adaptively;
+4. estimates concept mastery and uncertainty;
+5. distinguishes likely terminology difficulty from concept difficulty;
+6. returns the minimum ordered bridge path;
+7. records teacher review and reassessment evidence.
 
-## 2. Hackathon Demonstration Scope
+The first release should prioritise a deterministic and inspectable graph workflow. Add a language model only where it reduces content-preparation or explanation work.
 
-The prototype should prove one closed-loop workflow:
-
-```text
-Student/teacher reports concern
-        ↓
-Barrier assessment and risk triage
-        ↓
-Verified support recommendations
-        ↓
-Application checklist and case-owner assignment
-        ↓
-Status, deadline and intervention tracking
-        ↓
-Continuity outcome confirmed
-        ↘ unresolved → reassessment and follow-up
-```
-
-### Must-have features
-
-1. Student sign-in and a simple assisted concern form.
-2. Barrier assessment covering fees, transport, device, documents, migration and family-income disruption.
-3. Explainable support matching from a small verified dataset.
-4. A ranked recommendation page showing eligibility reason, required documents, deadline and official source.
-5. A continuity case with tasks, status history and an assigned counsellor.
-6. Counsellor dashboard for prioritisation and follow-up.
-7. Outcome recording: support received, attendance stable, unresolved or escalated.
-8. Audit trail showing who performed each important action.
-
-### Good additions after the core works
-
-- multilingual form and simplified explanations;
-- OCR-assisted document checklist;
-- deadline reminders;
-- consent-based parent/guardian access;
-- anonymised institution-level barrier analytics;
-- low-bandwidth progressive web application support.
-
-### Do not build for the first prototype
-
-- a new national student ID;
-- live APAAR, Aadhaar, DigiLocker or government-portal integration;
-- automated scholarship submission without official APIs and authorisation;
-- a large web-scraping pipeline;
-- AI-based final eligibility, dropout or fraud decisions;
-- complex predictive ML requiring unavailable historical student data.
-
-## 3. Recommended Stack
-
-| Layer | Technology | Reason |
-|---|---|---|
-| Web client | React + Vite + TypeScript | Fast to build, presentation-friendly and suitable for student/counsellor dashboards. |
-| Styling | Tailwind CSS | Rapid, consistent responsive UI. |
-| Backend API | Django + Django REST Framework | Strong authentication, admin panel, ORM and rapid case-management development. |
-| Database | PostgreSQL | Reliable relational model for cases, eligibility rules, tasks and audit history. |
-| Authentication | Django session/JWT with role-based access | Supports student, counsellor and administrator roles. |
-| Background jobs | Celery + Redis, only if required | Suitable for reminders and document processing; omit during the first vertical slice if time is short. |
-| File storage | Local development storage; S3-compatible storage later | Keeps the prototype simple while preserving a production path. |
-| AI service | Backend adapter for an approved LLM | Allows the provider or local model to change without rewriting business logic. |
-| Semantic retrieval | PostgreSQL + pgvector, optional | Retrieves relevant verified scheme passages when keyword/rule matching is insufficient. |
-| OCR | Tesseract or PaddleOCR, optional | Extracts fields for user confirmation; never treats OCR output as verified evidence automatically. |
-| API documentation | OpenAPI/Swagger through DRF tooling | Makes the architecture easy to demonstrate and test. |
-| Testing | Pytest, Django tests and Vitest | Covers eligibility rules, permissions and critical UI logic. |
-| Deployment | Docker Compose; Render/Railway/Azure/AWS for demo hosting | Reproducible setup and straightforward demonstration deployment. |
-
-## 4. Why Django Is a Strong Fit
-
-EduSure's core is structured workflow rather than model training. Django gives the team authentication, permissions, relational data, validation and an administrator interface quickly. The Django admin can also serve as an internal data-entry tool for verified schemes during the hackathon, reducing the amount of custom interface work.
-
-## 5. System Architecture
+## 2. Prototype Architecture
 
 ```text
-React PWA
+React web client
+   │
+   ├── Student diagnostic and bridge view
+   └── Teacher curriculum map and review dashboard
    │ HTTPS/JSON
    ▼
 Django REST API
-   ├── Identity and role service
-   ├── Continuity case service
-   ├── Eligibility and support-matching engine
-   ├── Task, escalation and notification service
-   ├── Outcome and audit service
+   ├── Identity and permissions
+   ├── Curriculum catalogue
+   ├── Concept graph service
+   ├── Adaptive diagnostic engine
+   ├── Mastery evidence service
+   ├── Bridge-path generator
+   ├── Reassessment service
    └── AI assistance adapter
-          ├── structured concern extraction
-          ├── plain-language explanation
-          └── retrieval from verified programme content
+          ├── candidate concept mapping
+          ├── bilingual terminology support
+          └── grounded explanation retrieval
    │
-   ├── PostgreSQL / optional pgvector
-   └── File storage
+   ├── PostgreSQL with optional pgvector
+   └── Reviewed curriculum/question content
 ```
 
-The matching engine remains rule-first and deterministic. AI may interpret a student's free-text concern and explain results, but database rules decide whether an opportunity is potentially applicable.
+## 3. Recommended Technology Stack
 
-## 6. Core Data Model
+| Layer | Technology | Purpose |
+|---|---|---|
+| Frontend | React + Vite + TypeScript | Student diagnostic and teacher review interfaces |
+| Styling | Tailwind CSS | Fast responsive implementation with consistent states |
+| Backend | Django + Django REST Framework | Authentication, validation, API development and administration |
+| Database | PostgreSQL | Curricula, concepts, edges, questions, attempts and review history |
+| Semantic retrieval | pgvector, optional for the first slice | Candidate curriculum matches and approved content retrieval |
+| Graph logic | NetworkX in the prototype | Traversal, ancestor discovery and topological bridge ordering |
+| Background tasks | Celery + Redis only if required | Offline curriculum parsing and long AI requests |
+| AI integration | Provider-neutral backend adapter | Prevents business logic from depending on one model vendor |
+| Testing | Pytest, Django tests and Vitest | Graph, diagnostic, permission and interface testing |
+| API documentation | OpenAPI/Swagger | Demonstration and team integration |
+| Packaging | Docker Compose | Reproducible local and hosted setup |
+| Deployment | Render, Railway, Azure or AWS | Select one based on team access; do not design around a provider |
+
+## 4. Why This Stack
+
+Django fits the structured workflow, reviewer permissions and audit requirements. PostgreSQL keeps the prototype simple while pgvector provides an optional semantic layer. NetworkX allows the team to implement and inspect graph algorithms without deploying a separate graph database.
+
+Neo4j is unnecessary for a 25-node prototype. Consider a graph database only after the data grows across many boards, subjects and versions.
+
+## 5. Core Data Model
 
 | Entity | Important fields |
 |---|---|
-| User | role, language, contact preference, active status |
-| StudentProfile | education level, institution, location, household context, consent flags |
-| ContinuityCase | student, reporter, status, priority, assigned counsellor, opened/closed dates |
-| Barrier | case, category, severity, description, evidence status |
-| SupportProgramme | provider, coverage, eligibility rules, deadline, required documents, verified source, last reviewed |
-| Recommendation | case, programme, match reasons, missing conditions, confidence/provenance |
-| CaseTask | owner, action, due date, status, completion evidence |
-| Application | programme, stage, submission date, reference, last update |
-| Intervention | type, provider, promised/received dates, amount or service details |
-| ContinuityOutcome | attendance status, support received, resolution state, follow-up date |
-| AuditEvent | actor, action, entity, timestamp, before/after metadata |
+| Curriculum | board, grade, subject, medium, version, source URL, licence notes |
+| LearningOutcome | curriculum, code, description, unit, source reference |
+| Concept | canonical name, description, subject, representation type |
+| CurriculumConcept | curriculum, concept, local terminology, coverage depth |
+| PrerequisiteEdge | prerequisite concept, dependent concept, rationale, reviewer, status |
+| ConceptMapping | source concept, destination concept, relation, confidence, reviewer status |
+| DiagnosticItem | concept, difficulty, language, representation, answer key, source/reviewer |
+| LearnerProfile | prototype identifier, source curriculum, destination curriculum, preferred language |
+| DiagnosticSession | learner, target outcomes, status, started/completed timestamps |
+| Attempt | session, item, response, score, response time, evidence type |
+| MasteryEstimate | session, concept, probability, evidence count, uncertainty |
+| BridgePlan | session, version, teacher, approval status, target outcome |
+| BridgeStep | plan, concept, order, resource link, completion evidence |
+| Reassessment | plan, target item, result, teacher decision, timestamp |
+| AuditEvent | actor, action, entity, timestamp, reason |
 
-Avoid collecting Aadhaar, APAAR or unnecessary identity documents in the prototype. Use synthetic student profiles and document placeholders.
+## 6. Concept Graph
 
-## 7. Support-Matching Logic
-
-Use a hybrid approach:
-
-1. **Hard filters:** geography, education level, age, income ceiling, category and application window.
-2. **Rule score:** count satisfied and missing conditions using explicit programme rules.
-3. **Barrier relevance:** prioritise support that addresses the student's recorded barriers.
-4. **Semantic retrieval:** optionally retrieve relevant passages from verified programme descriptions.
-5. **Explainability:** show matched conditions, missing information, official source and last verification date.
-6. **Human review:** mark every result as a recommendation, not an approval guarantee.
-
-Do not let an LLM invent schemes, deadlines or eligibility conditions.
-
-## 8. Responsible AI Design
-
-### Appropriate AI tasks
-
-- convert free-text or speech into structured barrier categories;
-- translate and simplify verified programme information;
-- retrieve relevant support content with citations;
-- prepare a counsellor case summary;
-- suggest a next-action checklist;
-- detect missing fields and approaching deadlines.
-
-### Tasks requiring rules or humans
-
-- final eligibility confirmation;
-- case priority when consequences are serious;
-- approval or rejection of assistance;
-- verification of documents;
-- closure of a continuity case;
-- sharing sensitive student information.
-
-Every AI response should retain source provenance and allow correction.
-
-## 9. User Interfaces
-
-### Student view
-
-- calm landing page with **Get Support** as the main action;
-- conversational multi-step concern form;
-- case timeline with the next required action;
-- matched-support cards with clear reasons;
-- document and deadline checklist;
-- visible counsellor/escalation status.
-
-### Counsellor view
-
-- queue ordered by urgency and overdue action;
-- filters for barrier type, institution, status and assignee;
-- complete case history and student contact preference;
-- assign, escalate, request document and record intervention actions;
-- outcome form and next follow-up date.
-
-### Administrator view
-
-- verify and update support programmes;
-- manage eligibility rules and source dates;
-- manage roles and institutions;
-- view anonymised service-performance metrics.
-
-## 10. Security and Privacy
-
-- collect only data required for the demonstrated workflow;
-- use synthetic data during the hackathon;
-- require explicit consent before sharing case information;
-- implement role-based permissions and institution-level isolation;
-- encrypt transport using HTTPS and protect stored secrets;
-- maintain audit records for sensitive actions;
-- separate identity data from analytics where practical;
-- never expose student cases in public dashboards;
-- define retention and deletion rules before real deployment.
-
-## 11. Prototype API Surface
+Represent the curriculum as a directed acyclic graph for the prototype:
 
 ```text
-POST   /api/cases/
-GET    /api/cases/{id}/
-POST   /api/cases/{id}/barriers/
-POST   /api/cases/{id}/assess/
-GET    /api/cases/{id}/recommendations/
-POST   /api/cases/{id}/assign/
-POST   /api/cases/{id}/tasks/
-PATCH  /api/tasks/{id}/
-POST   /api/cases/{id}/interventions/
-POST   /api/cases/{id}/outcome/
-GET    /api/counsellor/queue/
-GET    /api/dashboard/impact/
+integer operations
+       ↓
+negative-number operations
+       ↓
+algebraic simplification
+       ↓
+linear equations
 ```
 
-## 12. Suggested Repository Structure
+An edge means that the first concept supports learning the second. Every edge used in the demonstration should include a short rationale and teacher-review status.
+
+### Graph constraints
+
+- block self-references;
+- detect cycles before publishing a graph version;
+- keep source provenance for each curriculum outcome;
+- separate curriculum coverage from universal concept identity;
+- version mappings when a board changes its curriculum;
+- never treat an AI-suggested edge as approved until a reviewer confirms it.
+
+## 7. Adaptive Diagnostic Algorithm
+
+### Prototype method
+
+1. Begin with an item for the destination learning outcome.
+2. Record correctness, response time and selected evidence tags.
+3. When evidence is weak or incorrect, choose a question from the nearest untested prerequisite.
+4. When mastery is sufficiently supported, prune older ancestor branches.
+5. Continue until the system finds the earliest weak prerequisite or reaches the question limit.
+6. Present all inferences with confidence and evidence to the teacher.
+
+### Simple mastery model
+
+Use an explainable Beta-Binomial estimate for the first prototype:
 
 ```text
-edusure/
+mastery_probability = (correct_evidence + prior_success) /
+                      (all_evidence + prior_success + prior_failure)
+```
+
+Weight or separate evidence when items use different languages or representations. Do not convert one wrong answer into a firm gap.
+
+The team may evaluate Item Response Theory or Bayesian Knowledge Tracing later. They are not required to prove the workflow.
+
+## 8. Minimum Bridge-Path Generation
+
+The bridge generator should:
+
+1. collect weak or uncertain ancestors of the destination concept;
+2. remove concepts already supported by sufficient evidence;
+3. order remaining concepts by graph dependency;
+4. attach one reviewed learning activity and one exit check to each step;
+5. allow the teacher to add, remove or reorder steps;
+6. reassess the destination outcome after the bridge.
+
+The word "minimum" means the shortest defensible prerequisite sequence for the selected target, not the least possible teaching time.
+
+## 9. Language-Aware Evidence
+
+GapMap should avoid treating English difficulty as mathematics failure.
+
+For selected concepts, prepare equivalent items with different language demands:
+
+- symbolic or visual item with minimal text;
+- item in the learner's familiar language;
+- item using the destination classroom terminology.
+
+If the learner solves the low-language and familiar-language versions but fails only on destination terminology, show **possible terminology barrier**. A teacher decides the next action. The system does not claim a medical or cognitive diagnosis.
+
+## 10. AI Components
+
+### Suitable uses
+
+- extract candidate learning outcomes from authorised curriculum documents;
+- suggest possible equivalences across boards and languages;
+- produce reviewed question variants from a teacher-approved template;
+- explain the same verified concept in the learner's selected language;
+- retrieve a relevant approved textbook or DIKSHA resource;
+- summarise diagnostic evidence for a teacher.
+
+### Non-AI components
+
+- prerequisite traversal;
+- mastery calculation;
+- bridge ordering;
+- permissions and audit history;
+- source and curriculum versioning;
+- final teacher approval.
+
+### Guardrails
+
+- send only the minimum learner data to a model;
+- never put names or government IDs in prompts;
+- require structured JSON output and validate it;
+- attach source references to curriculum claims;
+- reject concepts or questions outside the approved graph;
+- log the model, prompt version and reviewer decision;
+- provide a deterministic fallback when the AI service fails.
+
+## 11. API Outline
+
+```text
+GET    /api/curricula/
+POST   /api/curricula/compare/
+GET    /api/graphs/{curriculum_id}/
+POST   /api/mappings/{id}/review/
+POST   /api/diagnostic-sessions/
+GET    /api/diagnostic-sessions/{id}/next-item/
+POST   /api/diagnostic-sessions/{id}/attempts/
+GET    /api/diagnostic-sessions/{id}/gap-map/
+POST   /api/diagnostic-sessions/{id}/bridge-plan/
+PATCH  /api/bridge-plans/{id}/
+POST   /api/bridge-plans/{id}/approve/
+POST   /api/bridge-plans/{id}/steps/{step_id}/complete/
+POST   /api/bridge-plans/{id}/reassess/
+GET    /api/teachers/cohort-gaps/
+```
+
+## 12. Interface Requirements
+
+### Student diagnostic
+
+- show one question at a time;
+- offer language selection without changing the concept target;
+- support keyboard navigation and clear focus states;
+- explain that the assessment builds a support path, not a grade;
+- show progress as a range when adaptive length varies;
+- provide a pause and resume option.
+
+### Student bridge view
+
+- show the destination topic and ordered prerequisites;
+- display one current step rather than the entire curriculum;
+- link every activity to its source;
+- show completed evidence and the next reassessment.
+
+### Teacher dashboard
+
+- inspect the source and destination curriculum map;
+- see each inferred gap with supporting attempts;
+- approve or reject AI-suggested mappings;
+- edit and assign the bridge plan;
+- view uncertainty and unresolved branches;
+- group learners by shared prerequisite gap.
+
+## 13. Privacy and Safety
+
+- use synthetic learner data for the hackathon;
+- do not collect Aadhaar, APAAR ID or official marksheets;
+- use role-based access for student and teacher views;
+- keep individual results out of public analytics;
+- store only responses needed for diagnostic evidence;
+- define deletion and retention settings before a real pilot;
+- do not infer disability, intelligence or dropout risk;
+- allow teachers and learners to correct profile and language information.
+
+## 14. Data Required for the Prototype
+
+The team needs:
+
+- official learning outcomes for the chosen curricula;
+- unit and topic metadata for the selected mathematics scope;
+- a teacher-reviewed 25-node concept graph;
+- approximately two reviewed diagnostic items per concept;
+- at least two bilingual terminology-check pairs;
+- one reviewed resource and exit check per bridge concept;
+- two synthetic student scenarios with known intended gaps.
+
+Use full textbook content only when its licence permits that use. Otherwise store citations, small necessary excerpts within applicable limits and links to the official resource.
+
+## 15. Suggested Repository Structure
+
+```text
+gapmap/
 ├── backend/
 │   ├── config/
 │   ├── accounts/
-│   ├── students/
-│   ├── cases/
-│   ├── programmes/
-│   ├── matching/
-│   ├── interventions/
+│   ├── curricula/
+│   ├── concepts/
+│   ├── diagnostics/
+│   ├── bridge_plans/
 │   └── audit/
 ├── frontend/
 │   └── src/
-│       ├── pages/
+│       ├── student/
+│       ├── teacher/
 │       ├── components/
-│       ├── features/
 │       └── services/
 ├── data/
-│   ├── demo/
-│   └── programme-sources/
+│   ├── curricula/
+│   ├── concept_graphs/
+│   ├── question_bank/
+│   └── demo/
 ├── documents/
 │   └── presentation/
 ├── tests/
@@ -239,52 +291,58 @@ edusure/
 └── tech.md
 ```
 
-## 13. Build Order
+## 16. Build Order
 
-### Milestone 1 — Vertical slice
+### Vertical slice
 
-- create database models;
-- seed 10–15 verified sample support programmes;
-- submit one student concern;
-- generate rule-based recommendations;
-- assign a case owner;
-- record one intervention and outcome.
+1. Create curriculum, concept, edge and question models.
+2. Seed five concepts for one algebra dependency chain.
+3. Implement target-to-prerequisite traversal.
+4. Submit diagnostic attempts and calculate mastery.
+5. Generate and display an ordered bridge path.
+6. Let a teacher approve the plan.
+7. Reassess the target concept.
 
-### Milestone 2 — Presentable workflow
+### Expand after the slice works
 
-- student case timeline;
-- counsellor queue and task management;
-- explainable match cards;
-- status transitions and audit events;
-- responsive visual polish.
+1. Increase the graph to approximately 25 concepts.
+2. Add the source-to-destination curriculum comparison.
+3. Add English and Hindi evidence pairs.
+4. Add candidate mapping and grounded explanation AI.
+5. Add cohort analysis and presentation polish.
 
-### Milestone 3 — AI and accessibility
+## 17. Testing Strategy
 
-- structured extraction from free text;
-- source-grounded plain-language explanations;
-- multilingual interface for selected languages;
-- optional document checklist/OCR demonstration.
+### Unit tests
 
-### Milestone 4 — Evidence and pitch
+- graph cycle rejection;
+- ancestor traversal and branch pruning;
+- mastery update calculations;
+- bridge ordering;
+- permissions and teacher approval;
+- AI output schema rejection.
 
-- measure matching precision on prepared scenarios;
-- test permissions and status workflow;
-- prepare synthetic impact dashboard;
-- rehearse the complete case story and failure recovery.
+### Scenario tests
 
-## 14. Demo Story
+- root concept gap;
+- known prerequisite gap;
+- terminology-only difficulty;
+- mixed terminology and concept difficulty;
+- confident mastery that prunes unnecessary questions;
+- uncertain evidence that routes to teacher review.
 
-Use one realistic synthetic student rather than many disconnected features:
+### Demonstration acceptance test
 
-> A first-generation Class 11 student from a daily-wage household is missing classes because transport costs increased and an income certificate is incomplete. A teacher raises a concern. EduSure identifies both barriers, matches verified financial and transport support, creates a documentation task, assigns a counsellor, tracks the intervention and confirms that attendance stabilised. A second scenario shows the feedback loop when support is not delivered.
+The team can start with a destination algebra item, identify a prepared negative-number gap, distinguish a prepared terminology issue, generate a reviewed bridge and show improved readiness after reassessment.
 
-## 15. Definition of Prototype Success
+## 18. Technical Definition of Done
 
-The prototype is successful when judges can see that:
-
-- the platform understands more than one barrier;
-- recommendations are traceable to verified sources;
-- a person owns the next action;
-- the system follows the case beyond form submission;
-- an unresolved case cannot silently disappear;
-- educational continuity is recorded as the final outcome.
+- the graph contains no cycles or unreviewed production edges;
+- every diagnostic item has a concept tag and provenance;
+- the adaptive path is reproducible from stored evidence;
+- every inferred gap displays its supporting attempts;
+- the bridge respects prerequisite order;
+- a teacher can modify and approve the path;
+- reassessment uses a different item for the same outcome;
+- the interface contains no claim of disability or intelligence;
+- the prototype works without APAAR or any private government API.

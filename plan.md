@@ -1,222 +1,215 @@
-# EduSure Product and Delivery Plan
+# GapMap Product and Delivery Plan
 
-## 1. Product Statement
+## 1. Objective
 
-EduSure is a student-support orchestration platform for preventing avoidable interruption of education. It turns a reported financial or practical difficulty into an owned, trackable Education Continuity Case and follows it until support is delivered and the student's participation becomes stable.
+Build a software prototype that diagnoses curriculum-transition gaps and generates a minimum teacher-reviewed learning bridge. The project will prove the complete loop from curriculum comparison to classroom-readiness reassessment.
 
-**Positioning:** Scholarship portals process applications. EduSure manages educational continuity.
+## 2. Target Transition
 
-## 2. Problem Boundary
+The initial prototype will focus on one bounded transition:
 
-EduSure addresses the gap between a student experiencing a barrier and that barrier being resolved. It focuses on:
+- subject: mathematics;
+- stage: Class 8 prerequisites required for selected Class 9 topics;
+- curriculum comparison: CBSE/NCERT and one selected state-board curriculum;
+- languages: English and Hindi;
+- graph size: approximately 25 concepts;
+- users: transitioning student and mathematics teacher.
 
-- early reporting of education-continuity risk;
-- assessment of overlapping barriers;
-- discovery of verified relevant support;
-- application and documentation guidance;
-- assignment of responsibility;
-- intervention and deadline tracking;
-- confirmation of the real educational outcome.
+The team should confirm the exact state board and target mathematics unit with a teacher before entering curriculum data.
 
-EduSure does not issue identity, store official academic credentials, award academic credit or approve government benefits.
+## 3. Product Boundary
 
-## 3. APAAR and EduSure: Are They the Same?
+GapMap owns four tasks:
 
-No. They operate at different layers of the education ecosystem.
+1. compare source and destination learning outcomes;
+2. identify root prerequisite and possible terminology gaps;
+3. create an ordered minimum bridge path;
+4. collect teacher review and readiness evidence.
 
-Official APAAR material describes APAAR as a permanent 12-digit student ID and lifelong academic passport. It consolidates academic records and achievements, works with DigiLocker and the Academic Bank of Credits, and supports academic mobility and credential verification.
+GapMap does not:
 
-EduSure does not reproduce those functions. It manages the operational response to a student's risk of leaving or interrupting education.
+- issue or replace a student identity;
+- store official credentials or academic credits;
+- transfer admission records;
+- provide a generic content library;
+- replace school examinations;
+- predict dropout;
+- diagnose learning disabilities;
+- make promotion or retention decisions.
 
-| Question | APAAR | EduSure |
+## 4. Existing-System Comparison
+
+| System | Published purpose | GapMap boundary |
 |---|---|---|
-| Primary purpose | Lifelong student identity and academic record/credit continuity | Intervention and support continuity when education is at risk |
-| Central object | Permanent student ID and verified academic credentials | Time-bound Education Continuity Case |
-| Typical information | Marksheets, certificates, credits, achievements and academic history | Current barriers, support matches, tasks, case owner, intervention status and outcome |
-| Main users | Students, institutions, credential/credit ecosystem and authorised verifiers | Students, families, teachers, counsellors, institutions and support providers |
-| Main workflow | Identify student, store/retrieve credentials, recognise and transfer credits | Report concern, assess barriers, match support, assign action, track delivery, verify stability |
-| Success measure | Trusted, portable academic identity and records | Student receives suitable support and remains active in education |
-| Decision role | Academic identity and credential infrastructure | Human-supervised case coordination; no official benefit approval |
-| Relationship | Potential digital public infrastructure | Complementary application that may use authorised inputs in a future deployment |
+| APAAR and ABC | Academic identity, records, achievements and credit mobility | GapMap assesses readiness for a destination topic; it stores no official credits or credentials |
+| UDISE+ | Education-management data for schools, teachers and students | GapMap uses only prototype learner and curriculum data |
+| PRABANDH OoSC module | Tracks out-of-school children and mainstreaming progress | GapMap begins after entry or re-entry and addresses curriculum readiness |
+| DIKSHA | Curriculum content, courses, quizzes, translations and digital learning resources | GapMap may link to reviewed resources after diagnosing the prerequisite path |
+| School ERP or Shala Darpan | Attendance, report cards and administration | GapMap explains a learning gap through curriculum dependencies |
+| PRASHAST | School screening and referral related to disability conditions | GapMap performs academic prerequisite diagnosis and makes no disability inference |
 
-### Simple explanation for judges
+### Judge-ready distinction
 
-> **APAAR tells the education system who the learner is and carries the learner's academic record. EduSure determines what support action is needed when that learner is at risk and tracks whether the action worked.**
+> **Existing systems can carry the student, record the student or provide content. GapMap determines the smallest learning bridge the student needs to understand the destination curriculum.**
 
-### Example
+## 5. User Journey
 
-APAAR may show that a learner is enrolled and preserve academic achievements during an institutional transition. If that learner starts missing classes because transport is unaffordable and an income document is incomplete, EduSure opens a continuity case, finds relevant assistance, assigns follow-up tasks and verifies whether attendance stabilises.
+### Teacher setup
 
-### Integration position
+1. Select source board, destination board, grade, subject and languages.
+2. Select the destination unit currently taught in class.
+3. Review the mapped learning outcomes and prerequisite graph.
+4. Assign the transition diagnostic.
 
-For the hackathon, EduSure should use synthetic internal student IDs and should not claim live APAAR integration.
+### Student diagnostic
 
-In a future authorised deployment, APAAR could be an optional consent-based identity or academic-context input. Such integration would require official APIs, permissions, purpose limitation, data minimisation and compliance review. EduSure must still work for a student without APAAR so that lack of an ID does not become another exclusion barrier.
+1. Answer one destination-level question.
+2. If the answer is incorrect, receive a prerequisite question.
+3. Continue only along branches where mastery remains uncertain.
+4. Complete equivalent or language-adjusted items when terminology may affect the result.
+5. Receive a short reviewed bridge plan rather than a final label.
 
-## 4. Differentiation from Adjacent Solutions
+### Recovery and reassessment
 
-| Existing solution | What it does well | Gap addressed by EduSure |
-|---|---|---|
-| Scholarship portal | Publishes schemes and accepts applications | Begins from the student's barriers and follows support through delivery and outcome |
-| Search engine/chatbot | Answers questions and finds information | Creates responsibility, tasks, deadlines, escalation and an auditable case |
-| School ERP/attendance system | Records attendance and administration | Connects a warning to external/internal support and tracks intervention effectiveness |
-| NGO case register | Tracks cases within one organisation | Provides a shared, explainable support-matching and continuity workflow across providers |
-| APAAR/DigiLocker/ABC | Identity, credentials, documents and academic credits | Coordinates present-tense action when a practical barrier threatens participation |
+1. Work through ordered prerequisite activities.
+2. Record evidence for each concept.
+3. Retake a different item for the original destination outcome.
+4. Return unresolved branches to the teacher.
 
-## 5. Target Users
+## 6. Delivery Stages
 
-### Primary beneficiaries
+### Stage 1: Curriculum and teacher validation
 
-- students from low-income or unstable-income households;
-- migrant and mobile families;
-- first-generation learners;
-- children of daily-wage and informal-sector workers;
-- students affected by a sudden family financial shock;
-- rural or remote students facing transport and connectivity barriers;
-- students whose support is delayed by missing or inconsistent documentation.
+- choose the state board and mathematics unit;
+- collect official learning outcomes and authorised curriculum references;
+- define approximately 25 concepts;
+- ask a mathematics teacher to review prerequisite links;
+- prepare two learner scenarios.
 
-### Operational users
+**Exit:** The team has a reviewed concept graph on paper or in JSON.
 
-- teachers who identify early warning signs;
-- school/college counsellors and welfare officers;
-- institution administrators;
-- verified NGO or support-programme coordinators;
-- authorised government users in a future deployment.
+### Stage 2: Working vertical slice
 
-## 6. Core Product Principles
+- scaffold the backend, frontend and database;
+- import curriculum, concept and prerequisite data;
+- create one student and teacher workflow;
+- implement a deterministic diagnostic traversal;
+- display a basic gap map and bridge sequence.
 
-1. **No wrong door:** A student reports the problem once; the system organises the next steps.
-2. **Barrier before scheme:** Start with the student's situation, not with a programme catalogue.
-3. **One owned case:** Every unresolved case has a visible owner and next action.
-4. **Verified, explainable help:** Recommendations show their source and match reasoning.
-5. **Human responsibility:** AI supports people but does not approve, reject or close serious cases.
-6. **Outcome over activity:** Form submission is not success; continuity is the outcome.
-7. **Inclusive by design:** The workflow must support assisted, multilingual and low-bandwidth access.
-8. **Minimal data:** Do not collect identity or documents that the workflow does not need.
+**Exit:** One learner can complete diagnosis and receive a reviewed bridge path.
 
-## 7. Product Workflow
+### Stage 3: Language-aware diagnostic
 
-1. Student, parent, teacher or institution raises a concern.
-2. A guided assessment records the student's barriers and urgency.
-3. The system creates an Education Continuity Case.
-4. Rule-based matching ranks verified support opportunities.
-5. The student receives explanations and a required-action checklist.
-6. A counsellor is assigned when follow-up or human judgement is needed.
-7. Tasks, documents, applications and interventions are tracked.
-8. The case owner records whether assistance was actually received.
-9. Attendance/participation stability is confirmed.
-10. An unresolved case is reassessed, escalated or matched to another intervention.
+- add English and Hindi versions of selected items;
+- tag items by concept, representation and language demand;
+- compare performance across equivalent items;
+- report terminology difficulty as evidence, not a diagnosis.
 
-## 8. Prototype Scope and Scenarios
+**Exit:** The demo can distinguish the prepared concept-gap and terminology-gap scenarios.
 
-### Scenario A: Successful intervention
+### Stage 4: Teacher workflow and reassessment
 
-A teacher reports fee and transport difficulties. EduSure finds verified support, identifies missing documents, assigns a counsellor, tracks delivery and closes the case after attendance improves.
+- add curriculum-map approval;
+- allow teachers to edit the bridge path;
+- record activity completion and evidence;
+- reassess the destination outcome;
+- show cohort-level recurring gaps.
 
-### Scenario B: Failed first intervention
+**Exit:** The prototype demonstrates the complete recovery loop.
 
-A recommended benefit remains pending past its expected date. EduSure flags the overdue task, reopens assessment and routes the student toward an alternative institutional or local support option.
+### Stage 5: AI assistance and presentation polish
 
-### Scenario C: Assisted access
+- suggest candidate curriculum equivalences for teacher approval;
+- generate question variants from reviewed templates;
+- retrieve approved explanations and resources;
+- produce a concise teacher summary with evidence links;
+- finish responsive and accessible UI states.
 
-A parent cannot comfortably navigate an English-only portal. A counsellor uses the guided multilingual workflow with consent and gives the family a simple action checklist.
+**Exit:** AI reduces preparation work while teachers retain control.
 
-## 9. Delivery Phases
+### Stage 6: Evaluation and pitch
 
-### Phase 1 — Foundation
+- test known gap scenarios;
+- compare adaptive question count with a fixed diagnostic;
+- collect teacher agreement on inferred gaps and bridge order;
+- test permissions and data minimisation;
+- rehearse a three-to-five-minute demonstration;
+- align every pitch claim with a visible prototype action.
 
-- confirm roles, statuses and case lifecycle;
-- create the Django/React project structure;
-- model students, barriers, programmes, cases, tasks and outcomes;
-- prepare synthetic personas and 10–15 verified sample programmes.
+**Exit:** The team can demonstrate one success path and one correction path.
 
-**Exit:** One case can be created and viewed end to end.
-
-### Phase 2 — Matching and case ownership
-
-- implement deterministic eligibility filters;
-- provide explainable match reasons;
-- create counsellor queue and assignment;
-- add task, deadline and audit tracking.
-
-**Exit:** A case produces defensible recommendations and has a responsible owner.
-
-### Phase 3 — Outcome loop
-
-- record intervention delivery;
-- add outcome verification and follow-up date;
-- reopen or escalate unresolved cases;
-- display the complete case timeline.
-
-**Exit:** The prototype proves the closed loop that differentiates EduSure.
-
-### Phase 4 — AI assistance and polish
-
-- extract barrier fields from free text;
-- generate source-grounded simple-language explanations;
-- add a selected multilingual interface;
-- polish responsive student and counsellor journeys.
-
-**Exit:** AI improves accessibility without controlling eligibility or case outcomes.
-
-### Phase 5 — Evaluation and pitch
-
-- run prepared scenario tests;
-- test access control and audit events;
-- measure matching quality and workflow completion;
-- rehearse a 3–5 minute demonstration;
-- align the presentation with working screens.
-
-**Exit:** Every major pitch claim is visible in the prototype.
-
-## 10. Team Workstreams
+## 7. Team Workstreams
 
 | Workstream | Responsibilities |
 |---|---|
-| Product/research | User journeys, verified programme dataset, policy and presentation evidence |
-| Backend | Data model, APIs, permissions, matching, workflow and audit log |
-| Frontend | Student journey, counsellor dashboard, case timeline and accessibility |
-| AI/data | Structured extraction, grounded retrieval, evaluation scenarios and guardrails |
-| QA/presentation | Test cases, demo data, usability review, deployment and pitch rehearsal |
+| Curriculum research | Official sources, outcome mapping, teacher review and question-bank provenance |
+| Backend and graph | Data model, APIs, diagnostic traversal, mastery updates and bridge ordering |
+| Frontend | Student diagnostic, concept map, bridge path, teacher review and reassessment screens |
+| AI and language | Candidate mapping, bilingual evidence, grounded explanations and evaluation |
+| QA and pitch | Test scenarios, accessibility, deployment, slide alignment and demo rehearsal |
 
-## 11. Hackathon Metrics
+## 8. Demonstration Script
 
-- time from concern submission to recommendation;
-- percentage of recommendations with complete source and reasoning;
-- percentage of open cases with an owner and next action;
-- number of overdue tasks surfaced;
-- case resolution/follow-up status;
-- attendance or participation change in the synthetic scenario;
-- successful completion of student and counsellor usability tasks.
+1. A teacher selects a Class 8 state-board background and a Class 9 CBSE algebra topic.
+2. GapMap displays the mapped prerequisites and highlights curriculum differences.
+3. The student answers the current algebra item incorrectly.
+4. Adaptive traversal tests ratios, integers and negative-number operations.
+5. A bilingual pair shows that ratio understanding exists while English terminology remains unfamiliar.
+6. GapMap identifies negative-number operations as the earliest concept gap.
+7. The teacher reviews a short ordered bridge and assigns it.
+8. The student completes the bridge and answers a new algebra item.
+9. The dashboard records improved readiness and keeps uncertain branches open.
 
-Do not present invented prototype metrics as real social impact. Label simulated results clearly and explain how a pilot would validate them.
+## 9. Evaluation Plan
 
-## 12. Risks and Controls
+### Diagnostic validity
+
+- percentage of prepared scenarios where GapMap finds the intended root gap;
+- mathematics-teacher agreement with the identified gap;
+- false-gap rate on concepts the learner already knows.
+
+### Efficiency
+
+- questions asked by the adaptive diagnostic versus a fixed test;
+- concepts assigned in the bridge versus the full remedial unit;
+- time from assessment start to teacher-reviewed plan.
+
+### Learning evidence
+
+- mastery change on bridge concepts;
+- performance change on the destination outcome;
+- number of reassessment cycles before the case reaches ready or needs teacher action.
+
+## 10. Risks and Controls
 
 | Risk | Control |
 |---|---|
-| AI invents a scheme or condition | Retrieve only from curated sources; show source and last-reviewed date |
-| Incorrect eligibility impression | Use deterministic rules and label results as potential matches pending authority verification |
-| Sensitive student data exposure | Synthetic demo data, role permissions, minimal collection and audit logs |
-| Stigma from a dropout-risk label | Use supportive barrier language and human review; avoid permanent risk labels |
-| No official integration access | Demonstrate adapters with mock data and clearly disclose the boundary |
-| Team overbuilds AI | Complete the rule-based closed loop before adding LLM features |
-| Prototype looks like a portal | Centre the case owner, timeline, overdue actions and verified outcome in the demo |
+| Incorrect curriculum equivalence | Teacher approves every mapping used in the prototype |
+| Hallucinated questions or explanations | Use reviewed templates and retrieve only from approved sources |
+| Language gap misclassified as a concept gap | Use equivalent bilingual and low-language-demand items; present uncertainty |
+| Student receives a permanent negative label | Store concept evidence and confidence, not intelligence or ability labels |
+| Diagnostic becomes too long | Traverse prerequisites adaptively and stop when evidence is sufficient |
+| Copyright or licence misuse | Store metadata and links unless the source licence permits local use |
+| Prototype claims unsupported impact | Label personas and results as synthetic and define a future pilot |
 
-## 13. Immediate Next Actions
+## 11. Immediate Actions
 
-1. Agree on the five case statuses: `NEW`, `ASSESSED`, `ACTION_IN_PROGRESS`, `FOLLOW_UP`, `STABLE/CLOSED`.
-2. Finalise one primary synthetic persona and one failure-loop persona.
-3. Define the minimum fields for barriers and support programmes.
-4. Collect 10–15 official sample programme records with URLs and review dates.
-5. Scaffold Django REST Framework, PostgreSQL and React/Vite.
-6. Build the first vertical slice before adding AI.
+1. Select the state board and one Class 9 mathematics unit.
+2. Recruit one mathematics teacher or faculty reviewer.
+3. Draft the 25-node concept dependency graph.
+4. Prepare two questions per concept and record their source or reviewer.
+5. Create two bilingual terminology-check pairs.
+6. Scaffold the database and diagnostic API.
+7. Build the student diagnostic before adding an LLM.
 
-## 14. Official APAAR References
+## 12. Official References
 
-- APAAR About: https://apaar.education.gov.in/about
-- APAAR official portal and FAQ: https://apaar.education.gov.in/
-- APAAR Terms of Use: https://apaar.education.gov.in/termsofuse
-- Ministry of Education APAAR page: https://www.education.gov.in/apaar
+- Ministry of Education, ABSS 2025 Outcome Document: https://www.education.gov.in/sites/upload_files/mhrd/files/nep/ABSS_2025_Outcome_Document.pdf
+- NCERT Learning Outcomes and curriculum resources: https://www.ncert.nic.in/
+- DIKSHA official overview: https://diksha.gov.in/about-us/
+- APAAR official portal: https://apaar.education.gov.in/
+- UDISE+ official portal: https://www.udiseplus.gov.in/
+- Samagra Shiksha: https://samagra.education.gov.in/about.html
+- PRASHAST: https://prashast.education.gov.in/
 
-Verified on 10 September 2026. The comparison should be rechecked before final submission because public-platform scope and policies can change.
+References and platform scopes checked on 10 September 2026. Recheck them before final submission.
