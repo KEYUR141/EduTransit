@@ -9,6 +9,7 @@ from .views import (
     PrerequisiteEdgeViewSet,
     SupportCaseViewSet,
     demo_context,
+    embedding_map,
     health,
     rag_retrieve,
 )
@@ -28,6 +29,7 @@ router.register("support-cases", SupportCaseViewSet, basename="support-case")
 urlpatterns = [
     path("health/", health, name="health"),
     path("rag/retrieve/", rag_retrieve, name="rag-retrieve"),
+    path("rag/embedding-map/", embedding_map, name="embedding-map"),
     path("demo-context/", demo_context, name="demo-context"),
     path("", include(router.urls)),
 ]

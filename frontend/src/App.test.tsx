@@ -37,7 +37,71 @@ describe('GapMap learner support workspace', () => {
         if (url.endsWith('/health/')) {
           return jsonResponse({ status: 'ok', service: 'GapMap API', time: '2026-09-11T00:00:00Z' })
         }
-        if (init?.method === 'POST') {
+        if (url.endsWith('/support-cases/1/analyse/')) {
+          const analysis = {
+            query: 'B.Pharm to data science',
+            scenario_id: null,
+            discovery_mode: true,
+            matched_scenario: {
+              scenario_id: 'S021',
+              title: 'Pharmacy to data science transition',
+              rarity: 'uncommon',
+            },
+            confidence: {
+              score: 0.58,
+              level: 'medium',
+              top_result_score: 0.72,
+              matched_term_coverage: 0.6,
+              supporting_chunks: 3,
+              discovery_margin: 0.12,
+              explanation: 'Useful evidence exists, but an instructor should review it.',
+              is_eligibility_probability: false,
+            },
+            review: {
+              required: true,
+              route: 'instructor_review',
+              priority: 'normal',
+              reason_codes: ['limited_query_term_coverage'],
+              publication_status: 'provisional',
+            },
+            count: 1,
+            results: [
+              {
+                chunk_id: 's021-statistics',
+                score: 0.72,
+                lexical_score: 0.7,
+                vector_score: 0.74,
+                matched_terms: ['statistics', 'probability'],
+                retrieval_reasons: ['matched canonical terms'],
+                text: 'The learner completed an undergraduate biostatistics course.',
+                section: 'learner_evidence',
+                citation: {
+                  source_id: 'fixture-s021',
+                  title: 'Reviewed pharmacy transition evidence',
+                  organisation: 'GapMap prototype dataset',
+                  url: '',
+                  version: '2026-demo',
+                  review_status: 'reviewed',
+                },
+              },
+            ],
+          }
+          return jsonResponse({
+            case: {
+              ...demoCase,
+              status: 'instructor_review',
+              status_label: 'Instructor review',
+              progress_stage: 2,
+              analysis_confidence_score: 0.58,
+              analysis_confidence_level: 'medium',
+              review_required: true,
+              review_route: 'instructor_review',
+              analysis_snapshot: analysis,
+              analysed_at: '2026-09-11T01:00:00Z',
+            },
+            analysis,
+          })
+        }        if (init?.method === 'POST') {
           return jsonResponse({
             ...demoCase,
             id: 2,
@@ -71,6 +135,21 @@ describe('GapMap learner support workspace', () => {
     expect(await screen.findByText(/system available/i)).toBeInTheDocument()
   })
 
+  it('runs backend evidence analysis and renders its review data', async () => {
+    render(<App />)
+
+    await screen.findByText(/system available/i)
+    const analysisButtons = screen.getAllByRole('button', { name: /generate evidence report/i })
+    fireEvent.click(analysisButtons.at(-1)!)
+
+    expect(await screen.findByText('58%')).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: /full report \(1\)/i })).toBeInTheDocument()
+    expect(screen.getByText(/reviewed pharmacy transition evidence/i)).toBeInTheDocument()
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringMatching(/\/support-cases\/1\/analyse\/$/),
+      expect.objectContaining({ method: 'POST' }),
+    )
+  })
   it('creates a support request through the API', async () => {
     render(<App />)
 

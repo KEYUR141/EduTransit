@@ -1,0 +1,29 @@
+.embedding-overlay { position: fixed; inset: 0; z-index: 100; display: grid; grid-template-rows: auto 1fr; background: #fff; color: var(--ink); font-family: var(--sans); }
+.embedding-header { min-height: 112px; display: flex; align-items: center; justify-content: space-between; gap: 30px; padding: 22px clamp(20px,4vw,64px); border-top: 5px solid var(--ink); border-bottom: 1px solid var(--ink); }
+.embedding-header h2 { margin: 8px 0 0; font-size: clamp(28px,3.5vw,52px); font-weight: 470; letter-spacing: -.055em; }
+.embedding-kicker { display: inline-flex; align-items: center; gap: 8px; font: 650 10px var(--mono); letter-spacing: .07em; text-transform: uppercase; }
+.embedding-header button { width: 45px; height: 45px; display: grid; place-items: center; flex: 0 0 auto; border: 1px solid var(--ink); border-radius: 50%; background: #fff; cursor: pointer; }
+.embedding-header button:hover { background: var(--lime); }
+.embedding-stage { min-height: 0; display: grid; grid-template-columns: minmax(0,1fr) minmax(280px,350px); }
+.embedding-canvas { position: relative; min-height: 520px; overflow: hidden; background: #f7f8f4; }
+.embedding-canvas canvas { display: block; width: 100%; height: 100%; }
+.embedding-loading { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; gap: 12px; font: 600 11px var(--mono); text-transform: uppercase; }
+.embedding-loading svg { animation: map-spin 2s linear infinite; }
+.embedding-loading.error { color: var(--red); text-transform: none; }
+.embedding-inspector { overflow-y: auto; padding: 34px 30px; border-left: 1px solid var(--ink); background: #fff; }
+.embedding-inspector > p:not(.mono-label) { margin: 17px 0 28px; color: var(--muted); font-size: 14px; line-height: 1.55; }
+.embedding-legend { display: grid; gap: 11px; padding: 20px 0; border-block: 1px solid var(--line); font: 600 10px var(--mono); text-transform: uppercase; }
+.embedding-legend span { display: flex; align-items: center; gap: 10px; }
+.embedding-legend i { width: 9px; height: 9px; border-radius: 50%; background: #9a6bdb; }
+.embedding-legend i.learner { background: #151515; } .embedding-legend i.requirement { background: #78a91f; } .embedding-legend i.context { background: #64748b; }
+.embedding-inspector dl { margin: 0; }
+.embedding-inspector dl div { display: flex; justify-content: space-between; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--line); }
+.embedding-inspector dt { color: var(--muted); font-size: 12px; } .embedding-inspector dd { margin: 0; font: 650 11px var(--mono); }
+.point-card { min-height: 155px; margin: 26px 0 20px; padding: 20px; background: var(--soft); border-left: 4px solid var(--lime); }
+.point-card h3 { margin: 12px 0 8px; font-size: 18px; line-height: 1.25; } .point-card p:not(.mono-label) { color: var(--muted); font-size: 13px; line-height: 1.5; } .point-card small { font: 500 9px var(--mono); text-transform: uppercase; }
+.projection-note { display: block; color: var(--muted); font: 500 9px/1.55 var(--mono); text-transform: uppercase; }
+.nav-embedding-button { display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px; border: 1px solid var(--ink); border-radius: 999px; background: var(--lime); color: var(--ink); font-size: 12px; font-weight: 650; cursor: pointer; }
+.nav-embedding-button:hover { background: var(--ink); color: #fff; }
+@keyframes map-spin { to { transform: rotate(360deg); } }
+@media (max-width: 800px) { .embedding-stage { grid-template-columns: 1fr; grid-template-rows: minmax(360px,58vh) auto; overflow-y: auto; } .embedding-canvas { min-height: 360px; } .embedding-inspector { overflow: visible; border-left: 0; border-top: 1px solid var(--ink); } .embedding-header { min-height: 90px; } .main-nav.open .nav-embedding-button { margin-top: 12px; justify-content: center; } }
+@media (prefers-reduced-motion: reduce) { .embedding-loading svg { animation: none; } }

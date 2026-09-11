@@ -16,6 +16,7 @@ from .models import (
     TransitionScenario,
 )
 from .rag_pipeline import retrieve_evidence
+from .rag_pipeline.projection import build_embedding_map
 from .serializers import (
     AnswerSerializer,
     AttemptSerializer,
@@ -23,6 +24,8 @@ from .serializers import (
     ConceptSerializer,
     CurriculumSerializer,
     DemoContextSerializer,
+    EmbeddingMapQuerySerializer,
+    EmbeddingMapResponseSerializer,
     DiagnosticItemPublicSerializer,
     DiagnosticSessionSerializer,
     HealthSerializer,
@@ -284,3 +287,13 @@ def rag_retrieve(request):
     except ValueError as error:
         return Response({"detail": str(error)}, status=status.HTTP_400_BAD_REQUEST)
     return Response(payload)
+
+
+@extend_schema(responses=EmbeddingMapResponseSerializer)
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def embedding_map(request):
+    """Return presentation labels and 3D coordinates, never the stored vectors."""
+    serializer = EmbeddingMapQuerySerializer(data=request.query_params)
+    serializer.is_valid(raise_exception=True)
+    return Response(build_embedding_map(serializer.validated_data["max_points"]))

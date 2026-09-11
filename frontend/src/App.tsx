@@ -12,15 +12,16 @@ import {
   Menu,
   MessageSquare,
   Network,
+  Orbit,
   PauseCircle,
   School,
   ShieldCheck,
-  Upload,
   UserRound,
   X,
 } from 'lucide-react'
 
 import './App.css'
+import { EmbeddingMap } from './EmbeddingMap'
 import {
   analyseSupportCase,
   checkApiHealth,
@@ -117,6 +118,58 @@ function routeLabel(route?: SupportCase['review_route']) {
   if (route === 'provisional_guidance') return 'Provisional guidance'
   return 'Awaiting analysis'
 }
+function humanise(value: string) {
+  return value.replaceAll('_', ' ').replaceAll('-', ' ')
+}
+
+function evidencePresentation(item: RagAnalysis['results'][number]) {
+  const kind = item.section
+  if (kind === 'learner_evidence') {
+    try {
+      const record = JSON.parse(item.text.replace(/^Learner evidence:\s*/, '')) as {
+        evidence_id?: string
+        competencies?: string[]
+        verified?: boolean
+        type?: string
+      }
+      const competencies = record.competencies?.map(humanise).join(', ')
+      return {
+        label: 'Learner evidence',
+        title: record.evidence_id ? `Learner record ${record.evidence_id}` : 'Learner record',
+        summary: competencies
+          ? `Recorded competencies: ${competencies}.`
+          : 'A learner record was retrieved for comparison.',
+        status: record.verified ? 'Verified' : 'Needs verification',
+      }
+    } catch {
+      // Fall through to the safe generic presentation below.
+    }
+  }
+  if (kind === 'destination_requirement') {
+    const title = item.text.match(/Destination requirement:\s*([^.]*)/)?.[1]
+    const expected = String(item.metadata.expected_status ?? 'review')
+    return {
+      label: 'Destination requirement',
+      title: title || 'Programme requirement',
+      summary: item.text.replace(/^Destination requirement:\s*[^.]*\.\s*/, ''),
+      status: humanise(expected),
+    }
+  }
+  if (kind === 'transition_context') {
+    return {
+      label: 'Transition context',
+      title: 'Source and destination comparison',
+      summary: item.text,
+      status: 'Reviewed context',
+    }
+  }
+  return {
+    label: humanise(kind || 'evidence'),
+    title: item.citation.title,
+    summary: item.text,
+    status: item.citation.review_status,
+  }
+}
 
 function App() {
   const [requestOpen, setRequestOpen] = useState(false)
@@ -130,6 +183,7 @@ function App() {
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [analysing, setAnalysing] = useState(false)
+  const [evidenceTab, setEvidenceTab] = useState<'evidence' | 'analysis' | 'review'>('evidence')
   const [createdReference, setCreatedReference] = useState('')
   const [requestError, setRequestError] = useState('')
   const [analysisError, setAnalysisError] = useState('')
@@ -138,6 +192,7 @@ function App() {
     'connecting',
   )
   const [supportCases, setSupportCases] = useState<SupportCase[]>([])
+  const [embeddingMapOpen, setEmbeddingMapOpen] = useState(() => window.location.hash === '#embedding-map')
 
   const selectedRequest = useMemo(
     () => requestKinds.find((item) => item.id === selectedKind) ?? requestKinds[0],
@@ -148,7 +203,7 @@ function App() {
   const confidence = activeCase.analysis_confidence_score ?? 0
   const confidencePercent = Math.round(confidence * 100)
   const analysis = activeCase.analysis_snapshot as RagAnalysis | undefined
-  const evidence = Array.isArray(analysis?.results) ? analysis.results.slice(0, 2) : []
+  const evidence = Array.isArray(analysis?.results) ? analysis.results : []
 
   useEffect(() => {
     let cancelled = false
@@ -227,6 +282,7 @@ function App() {
         ...cases.filter((item) => item.id !== result.case.id),
       ])
       setApiStatus('connected')
+      setEvidenceTab('evidence')
     } catch (error) {
       setAnalysisError(error instanceof Error ? error.message : 'Analysis could not be completed.')
     } finally {
@@ -255,6 +311,7 @@ function App() {
             <a href="#workspace">Workspace</a>
             <a href="#support">Support directory</a>
             <a href="#method">How it works</a>
+            <button className="nav-embedding-button" type="button" onClick={() => setEmbeddingMapOpen(true)}><Orbit size={14} /> Embedding map</button>
           </nav>
           <div className="header-actions">
             <button className="quiet-button" type="button" onClick={() => openRequest('unsure')}>
@@ -369,25 +426,84 @@ function App() {
                 </div>
               </section>
 
-              {evidence.length > 0 && (
-                <section className="evidence-list" aria-label="Retrieved evidence">
-                  <p className="column-title">Retrieved evidence</p>
-                  {evidence.map((item) => (
-                    <div key={item.chunk_id}>
-                      <FileText size={16} />
-                      <span><strong>{item.citation.title}</strong><small>{item.text}</small></span>
-                      <em>{Math.round(item.score * 100)}%</em>
+              {analysis?.confidence && (
+                <section className="evidence-workbench" aria-label="Case evidence and review">
+                  <div className="review-tabs" role="tablist" aria-label="Analysis details">
+                    {(['evidence', 'analysis', 'review'] as const).map((tab) => (
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={evidenceTab === tab}
+                        className={evidenceTab === tab ? 'active' : ''}
+                        onClick={() => setEvidenceTab(tab)}
+                        key={tab}
+                      >
+                        {tab === 'evidence' ? `Full report (${analysis.count})` : tab}
+                      </button>
+                    ))}
+                  </div>
+
+                  {evidenceTab === 'evidence' && (
+                    <div className="evidence-detail-list" role="tabpanel">
+                      {evidence.length ? evidence.map((item, index) => {
+                        const report = evidencePresentation(item)
+                        return (
+                          <article key={item.chunk_id}>
+                            <span className="evidence-number">{String(index + 1).padStart(2, '0')}</span>
+                            <div className="evidence-copy">
+                              <p className="evidence-kind">{report.label}</p>
+                              <div className="evidence-title-row">
+                                <strong>{report.title}</strong>
+                                <span>{report.status}</span>
+                              </div>
+                              <p>{report.summary}</p>
+                              <div className="evidence-tags">
+                                {item.matched_terms.slice(0, 4).map((term) => <span key={term}>{humanise(term)}</span>)}
+                              </div>
+                              <div className="evidence-meta">
+                                <span>{item.citation.organisation || 'GapMap reviewed source'}</span>
+                                <span>{Math.round(item.score * 100)}% retrieval match</span>
+                                <span>{item.citation.review_status} source</span>
+                              </div>
+                            </div>
+                          </article>
+                        )
+                      }) : (
+                        <div className="empty-evidence"><FileText size={19} /><p><strong>No reliable evidence was found.</strong> The case has been sent for instructor review instead of forcing a match.</p></div>
+                      )}
                     </div>
-                  ))}
+                  )}
+
+                  {evidenceTab === 'analysis' && (
+                    <div className="analysis-details" role="tabpanel">
+                      <p>{analysis.confidence.explanation}</p>
+                      <dl>
+                        <div><dt>Top retrieval score</dt><dd>{Math.round(analysis.confidence.top_result_score * 100)}%</dd></div>
+                        <div><dt>Query coverage</dt><dd>{Math.round(analysis.confidence.matched_term_coverage * 100)}%</dd></div>
+                        <div><dt>Supporting chunks</dt><dd>{analysis.confidence.supporting_chunks}</dd></div>
+                        <div><dt>Candidate margin</dt><dd>{Math.round(analysis.confidence.discovery_margin * 100)}%</dd></div>
+                      </dl>
+                      <p className="analysis-limit"><ShieldCheck size={15} /> This signal describes evidence retrieval only. It is not an eligibility probability.</p>
+                    </div>
+                  )}
+
+                  {evidenceTab === 'review' && (
+                    <div className="review-details" role="tabpanel">
+                      <div><span>Suggested case pattern</span><strong>{analysis.matched_scenario?.title || 'No reliable scenario match'}</strong><small>{analysis.matched_scenario ? `${analysis.matched_scenario.scenario_id} · ${analysis.matched_scenario.rarity}` : 'Instructor classification required'}</small></div>
+                      <div><span>Review route</span><strong>{routeLabel(analysis.review.route)}</strong><small>{analysis.review.priority} priority · {analysis.review.publication_status}</small></div>
+                      <div className="reason-list"><span>Why it was routed</span>{analysis.review.reason_codes.length ? analysis.review.reason_codes.map((reason) => <small key={reason}>{reason.replaceAll('_', ' ')}</small>) : <small>No escalation reason recorded</small>}</div>
+                    </div>
+                  )}
                 </section>
               )}
 
-              <div className="case-actions">
-                <button className="pill-button" type="button" onClick={runAnalysis} disabled={analysing}>
-                  {analysing ? 'Comparing evidence…' : activeCase.analysed_at ? 'Run analysis again' : 'Run evidence analysis'}
-                  {!analysing && <ArrowRight size={16} />}
+              <div className="case-actions report-actions">
+                <button className="pill-button" type="button" onClick={() => openRequest(activeCase.category)}>
+                  Raise a support case <ArrowRight size={16} />
                 </button>
-                <button className="line-button" type="button"><Upload size={16} /> Add evidence</button>
+                <button className="quiet-report-button" type="button" onClick={runAnalysis} disabled={analysing}>
+                  {analysing ? 'Refreshing report…' : analysis?.confidence ? 'Refresh evidence report' : 'Generate evidence report'}
+                </button>
               </div>
               {analysisError && <p className="inline-error" role="alert">{analysisError}</p>}
             </article>
@@ -433,6 +549,8 @@ function App() {
           <button className="line-button inverse" type="button" onClick={() => openRequest()}>Open a case</button>
         </div>
       </footer>
+
+      <EmbeddingMap open={embeddingMapOpen} onClose={() => setEmbeddingMapOpen(false)} />
 
       {requestOpen && (
         <div className="modal-backdrop" role="presentation" onMouseDown={() => setRequestOpen(false)}>

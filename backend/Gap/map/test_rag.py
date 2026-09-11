@@ -177,3 +177,16 @@ class RagRetrievalApiTests(APITestCase):
         self.assertFalse(response.data["guardrails"]["scenario_scope_enforced"])
         self.assertIn("confidence", response.data)
         self.assertIn("review", response.data)
+
+    def test_embedding_map_projects_approved_vectors_without_exposing_them(self):
+        response = self.client.get("/api/rag/embedding-map/?max_points=300")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+        self.assertEqual(response.data["dimensions"], 3)
+        self.assertEqual(response.data["source_dimensions"], 384)
+        self.assertEqual(response.data["count"], 4)
+        self.assertEqual(len(response.data["points"]), 4)
+        point = response.data["points"][0]
+        self.assertTrue({"x", "y", "z", "scenario", "review_status"} <= point.keys())
+        self.assertNotIn("embedding", point)
+        self.assertNotIn("text", point)

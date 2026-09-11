@@ -1,4 +1,4 @@
-﻿const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000/api').replace(
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000/api').replace(
   /\/$/,
   '',
 )
@@ -47,13 +47,21 @@ export type SupportCase = {
 export type RagResult = {
   chunk_id: string
   score: number
+  lexical_score: number
+  vector_score: number
+  matched_terms: string[]
+  retrieval_reasons: string[]
   text: string
   section: string
+  page?: number | null
+  metadata: Record<string, unknown>
   citation: {
     source_id: string
     title: string
     organisation: string
     url: string
+    version: string
+    review_status: string
   }
 }
 
@@ -69,6 +77,10 @@ export type RagAnalysis = {
   confidence: {
     score: number
     level: 'low' | 'medium' | 'high'
+    top_result_score: number
+    matched_term_coverage: number
+    supporting_chunks: number
+    discovery_margin: number
     explanation: string
     is_eligibility_probability: boolean
   }
@@ -155,3 +167,30 @@ export async function analyseSupportCase(id: number): Promise<{
 }
 
 export { API_BASE_URL }
+
+export type EmbeddingMapPoint = {
+  chunk_id: string
+  x: number
+  y: number
+  z: number
+  section: string
+  review_status: string
+  scenario: { scenario_id: string; title: string; rarity: string } | null
+}
+
+export type EmbeddingMapResponse = {
+  projection: string
+  source_dimensions: number
+  dimensions: number
+  embedding_model: string
+  count: number
+  explained_variance: number[]
+  points: EmbeddingMapPoint[]
+}
+
+export async function getEmbeddingMap(maxPoints = 300): Promise<EmbeddingMapResponse> {
+  const response = await fetch(`${API_BASE_URL}/rag/embedding-map/?max_points=${maxPoints}`, {
+    headers: { Accept: 'application/json' },
+  })
+  return readJson<EmbeddingMapResponse>(response)
+}

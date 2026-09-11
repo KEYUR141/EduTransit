@@ -340,3 +340,33 @@ class SupportCaseAnalyseRequestSerializer(serializers.Serializer):
 class SupportCaseAnalyseResponseSerializer(serializers.Serializer):
     case = SupportCaseSerializer()
     analysis = RagRetrieveResponseSerializer()
+
+
+class EmbeddingMapQuerySerializer(serializers.Serializer):
+    max_points = serializers.IntegerField(min_value=10, max_value=500, default=300)
+
+
+class EmbeddingMapScenarioSerializer(serializers.Serializer):
+    scenario_id = serializers.CharField()
+    title = serializers.CharField()
+    rarity = serializers.CharField()
+
+
+class EmbeddingMapPointSerializer(serializers.Serializer):
+    chunk_id = serializers.CharField()
+    x = serializers.FloatField()
+    y = serializers.FloatField()
+    z = serializers.FloatField()
+    section = serializers.CharField(allow_blank=True)
+    scenario = EmbeddingMapScenarioSerializer(allow_null=True)
+    review_status = serializers.CharField()
+
+
+class EmbeddingMapResponseSerializer(serializers.Serializer):
+    projection = serializers.CharField()
+    source_dimensions = serializers.IntegerField()
+    dimensions = serializers.IntegerField()
+    embedding_model = serializers.CharField(allow_blank=True)
+    count = serializers.IntegerField()
+    explained_variance = serializers.ListField(child=serializers.FloatField())
+    points = EmbeddingMapPointSerializer(many=True)
