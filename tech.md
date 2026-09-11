@@ -40,22 +40,25 @@ Django REST API
    └── Reviewed curriculum/question content
 ```
 
-## 3. Recommended Technology Stack
+## 3. Technology Stack Currently Used
 
-| Layer | Technology | Purpose |
+| Layer | Technology currently used | Current purpose |
 |---|---|---|
-| Frontend | React + Vite + TypeScript | Student diagnostic and teacher review interfaces |
-| Styling | Tailwind CSS | Fast responsive implementation with consistent states |
-| Backend | Django + Django REST Framework | Authentication, validation, API development and administration |
-| Database | PostgreSQL | Curricula, concepts, edges, questions, attempts and review history |
-| Semantic retrieval | pgvector, optional for the first slice | Candidate curriculum matches and approved content retrieval |
-| Graph logic | NetworkX in the prototype | Traversal, ancestor discovery and topological bridge ordering |
-| Background tasks | Celery + Redis only if required | Offline curriculum parsing and long AI requests |
-| AI integration | Provider-neutral backend adapter | Prevents business logic from depending on one model vendor |
-| Testing | Pytest, Django tests and Vitest | Graph, diagnostic, permission and interface testing |
-| API documentation | OpenAPI/Swagger | Demonstration and team integration |
-| Packaging | Docker Compose | Reproducible local and hosted setup |
-| Deployment | Render, Railway, Azure or AWS | Select one based on team access; do not design around a provider |
+| Frontend | React 19 + Vite 8 + TypeScript | Builds the support portal, case workspace and evidence-report interface |
+| Interface styling | CSS + Tailwind CSS 4 | Provides the responsive white-theme portal layout and shared styling foundation |
+| 3D visualisation | Three.js + OrbitControls | Displays the approved evidence embeddings as an interactive 3D similarity map |
+| Frontend icons | Lucide React | Supplies the portal's interface icons |
+| Backend | Django 5 + Django REST Framework | Implements support-case, diagnostic, RAG and embedding-map APIs |
+| API integration | Browser Fetch API + JSON | Connects the React frontend to the Django REST endpoints |
+| Database | PostgreSQL + Psycopg | Stores scenarios, support cases, academic sources and evidence chunks |
+| Vector storage and search | pgvector with an HNSW cosine index | Stores 384-dimensional embeddings and performs semantic similarity retrieval |
+| Embedding model | Sentence Transformers (`paraphrase-multilingual-MiniLM-L12-v2`) | Generates multilingual 384-dimensional evidence and query embeddings |
+| Retrieval | Hybrid pgvector similarity + lexical and canonical-term matching | Retrieves grounded evidence while retaining citations and review metadata |
+| Projection | NumPy PCA/SVD | Converts the stored 384-dimensional vectors into safe 3D coordinates without exposing raw embeddings |
+| Configuration and browser access | django-environ + django-cors-headers | Loads environment settings and permits the local frontend to access the API |
+| API documentation | drf-spectacular / OpenAPI | Generates the current API schema and interactive documentation |
+| Testing | Django test framework + Vitest + Testing Library | Tests backend retrieval, guardrails, projection responses and frontend behaviour |
+| Frontend code quality | TypeScript type checking + Oxlint | Checks frontend types and code quality before building |
 
 ## 4. Why This Stack
 
