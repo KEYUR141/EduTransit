@@ -27,6 +27,40 @@ The React dashboard checks GET /api/health/, loads the active workspace through 
 
 The frontend defaults to http://127.0.0.1:8000/api. Override it with VITE_API_BASE_URL in frontend/.env; see frontend/.env.example.
 
+## RAG retrieval
+
+The implementation is organized in map/rag_pipeline/: ingestion, Sentence Transformer embeddings, source guardrails, explainable hybrid scoring, and scenario-scoped retrieval are separate components with a small public interface.
+
+GapMap uses sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2 for normalized 384-dimensional query and document embeddings. Evidence chunks are stored with their embedding-model identifier and SHA-256 checksum so vectors from different models are never compared.
+
+Support cases can now be analysed and routed with POST /api/support-cases/{id}/analyse/. The resulting evidence-confidence signal and review route are persisted. The instructor queue is available from GET /api/support-cases/?review_required=true. Confidence describes retrieval evidence quality; it is never presented as an admission or eligibility probability.
+
+The retrieval endpoint is:
+
+    POST /api/rag/retrieve/
+
+Example request:
+
+    {
+      "query": "Do my statistics and programming courses meet the requirements?",
+      "scenario_id": "S021",
+      "top_k": 5
+    }
+
+When `scenario_id` is supplied, retrieval is restricted to that scenario, approved chunks and reviewed or explicitly illustrative sources. When it is omitted, the endpoint enters cross-scenario discovery mode, reports whether a reliable scenario was found, and routes low-confidence cases to instructor review. PostgreSQL uses pgvector cosine ranking; SQLite uses the same vectors with application-side cosine scoring for tests and offline demonstrations. Lexical and canonical-term scores are combined with vector similarity, and every result includes its citation and retrieval reasons.
+
+Set RAG_EMBEDDING_LOCAL_ONLY=False once when the model must be downloaded. After it is cached, switch the value back to True for a network-independent judging demonstration.
+
+Rebuild and persist all pgvector embeddings at any time with:
+
+    python manage.py rebuild_rag_embeddings --batch-size 32
+
+Validate stored dimensions, checksums, retrieval modes, citations, and the pgvector index with:
+
+    python manage.py verify_rag
+
+Use --only-missing for incremental ingestion or --scenario S021 for one scenario.
+
 ## Demo API journey
 
 1. `GET /api/demo-context/` discovers the seeded learner and valid target concepts.

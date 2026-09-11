@@ -1,7 +1,14 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000/api').replace(
+﻿const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000/api').replace(
   /\/$/,
   '',
 )
+
+export type ConfidenceLevel = 'not_analysed' | 'low' | 'medium' | 'high'
+export type ReviewRoute =
+  | 'not_routed'
+  | 'provisional_guidance'
+  | 'instructor_review'
+  | 'specialist_escalation'
 
 export type SupportCase = {
   id: number
@@ -16,12 +23,64 @@ export type SupportCase = {
   source_location: string
   destination_label: string
   destination_location: string
-  status: 'received' | 'evidence_review' | 'gap_analysis' | 'roadmap' | 'readiness_review'
+  status:
+    | 'received'
+    | 'evidence_review'
+    | 'gap_analysis'
+    | 'roadmap'
+    | 'readiness_review'
+    | 'instructor_review'
   status_label: string
   progress_stage: number
+  matched_scenario?: number | null
+  analysis_confidence_score?: number | null
+  analysis_confidence_level?: ConfidenceLevel
+  review_required?: boolean
+  review_route?: ReviewRoute
+  analysis_snapshot?: RagAnalysis | Record<string, never>
+  analysed_at?: string | null
   is_demo: boolean
   created_at: string
   updated_at: string
+}
+
+export type RagResult = {
+  chunk_id: string
+  score: number
+  text: string
+  section: string
+  citation: {
+    source_id: string
+    title: string
+    organisation: string
+    url: string
+  }
+}
+
+export type RagAnalysis = {
+  query: string
+  scenario_id: string | null
+  discovery_mode: boolean
+  matched_scenario: {
+    scenario_id: string
+    title: string
+    rarity: string
+  } | null
+  confidence: {
+    score: number
+    level: 'low' | 'medium' | 'high'
+    explanation: string
+    is_eligibility_probability: boolean
+  }
+  review: {
+    required: boolean
+    route: ReviewRoute
+    priority: string
+    reason_codes: string[]
+    publication_status: string
+  }
+  count: number
+  results: RagResult[]
 }
 
 export type CreateSupportCase = {
@@ -78,6 +137,21 @@ export async function createSupportCase(payload: CreateSupportCase): Promise<Sup
     body: JSON.stringify(payload),
   })
   return readJson<SupportCase>(response)
+}
+
+export async function analyseSupportCase(id: number): Promise<{
+  case: SupportCase
+  analysis: RagAnalysis
+}> {
+  const response = await fetch(`${API_BASE_URL}/support-cases/${id}/analyse/`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ top_k: 5 }),
+  })
+  return readJson(response)
 }
 
 export { API_BASE_URL }

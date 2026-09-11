@@ -63,12 +63,12 @@ describe('GapMap learner support workspace', () => {
 
     expect(
       screen.getByRole('heading', {
-        name: /your learning should not restart when your education changes/i,
+        name: /find what is missing.*keep what you already know/i,
       }),
     ).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /what would you like help with/i })).toBeInTheDocument()
+    expect(screen.getAllByText(/support directory/i)).toHaveLength(2)
     expect(await screen.findByText(/case gm-2048/i)).toBeInTheDocument()
-    expect(await screen.findByText(/api connected/i)).toBeInTheDocument()
+    expect(await screen.findByText(/system available/i)).toBeInTheDocument()
   })
 
   it('creates a support request through the API', async () => {

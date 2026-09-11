@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.core.management import call_command
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -43,13 +45,19 @@ class GapMapPrototypeApiTests(APITestCase):
 
         answer = self.client.post(
             f"/api/diagnostic-sessions/{session_id}/answer/",
-            {"item_id": first.data["question"]["id"], "answer": "3", "response_time_ms": 4200},
+            {
+                "item_id": first.data["question"]["id"],
+                "answer": "3",
+                "response_time_ms": 4200,
+            },
             format="json",
         )
 
         self.assertEqual(answer.status_code, status.HTTP_201_CREATED, answer.data)
         self.assertFalse(answer.data["attempt"]["is_correct"])
-        self.assertEqual(answer.data["next_question"]["concept_name"], "Algebraic expressions")
+        self.assertEqual(
+            answer.data["next_question"]["concept_name"], "Algebraic expressions"
+        )
 
         gap = self.client.get(f"/api/diagnostic-sessions/{session_id}/gap-map/")
         target_node = next(node for node in gap.data["nodes"] if node["is_target"])
@@ -71,9 +79,13 @@ class GapMapPrototypeApiTests(APITestCase):
             {"item_id": algebra_question["id"], "answer": "wrong"},
             format="json",
         )
-        self.assertEqual(next_answer.data["next_question"]["concept_name"], "Integer operations")
+        self.assertEqual(
+            next_answer.data["next_question"]["concept_name"], "Integer operations"
+        )
 
-        response = self.client.post(f"/api/diagnostic-sessions/{session_id}/bridge-plan/", {}, format="json")
+        response = self.client.post(
+            f"/api/diagnostic-sessions/{session_id}/bridge-plan/", {}, format="json"
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
         self.assertEqual(
             [step["concept_code"] for step in response.data["steps"]],
@@ -115,6 +127,7 @@ class GapMapPrototypeApiTests(APITestCase):
         )
         self.assertEqual(wrong_curriculum.status_code, status.HTTP_400_BAD_REQUEST)
 
+
 class SupportCaseApiTests(APITestCase):
     def test_creates_and_lists_a_support_case(self):
         created = self.client.post(
@@ -124,7 +137,10 @@ class SupportCaseApiTests(APITestCase):
                 "requester_name": "Demo Student",
                 "requester_role": "student",
                 "category": "study-abroad",
-                "summary": "I need help comparing my completed programme with a destination course.",
+                "summary": (
+                    "I need help comparing my completed programme with a "
+                    "destination course."
+                ),
                 "source_label": "Current programme",
                 "source_location": "India",
                 "destination_label": "Destination programme",
@@ -157,3 +173,67 @@ class SupportCaseApiTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("summary", response.data)
+
+    @patch("map.views.retrieve_evidence")
+    def test_analysis_persists_confidence_and_enters_instructor_queue(
+        self, retrieve_evidence
+    ):
+        support_case = SupportCase.objects.create(
+            category="higher-education",
+            summary="A completely new cross-domain transition needs assessment.",
+            source_label="B.Pharm",
+            destination_label="MSc Food Informatics",
+        )
+        retrieve_evidence.return_value = {
+            "query": support_case.summary,
+            "scenario_id": None,
+            "discovery_mode": True,
+            "matched_scenario": None,
+            "retrieval_mode": "hybrid_offline",
+            "embedding_backend": "test-model",
+            "confidence": {
+                "score": 0.27,
+                "level": "low",
+                "signal": "retrieval_evidence_confidence",
+                "top_result_score": 0.3,
+                "matched_term_coverage": 0.2,
+                "supporting_chunks": 1,
+                "discovery_margin": 0.01,
+                "explanation": "Instructor review required.",
+                "is_eligibility_probability": False,
+            },
+            "review": {
+                "required": True,
+                "route": "instructor_review",
+                "priority": "high",
+                "reason_codes": ["no_reliable_scenario_match"],
+                "publication_status": "provisional",
+            },
+            "guardrails": {
+                "scenario_scope_enforced": False,
+                "cross_scenario_discovery": True,
+                "approved_chunks_only": True,
+                "integrity_checksum_verified": True,
+                "embedding_model_match_enforced": True,
+                "maximum_results": 10,
+                "model_decision_allowed": False,
+            },
+            "count": 0,
+            "results": [],
+        }
+
+        response = self.client.post(
+            f"/api/support-cases/{support_case.id}/analyse/", {}, format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+        support_case.refresh_from_db()
+        self.assertEqual(support_case.status, "instructor_review")
+        self.assertEqual(support_case.analysis_confidence_level, "low")
+        self.assertEqual(support_case.review_route, "instructor_review")
+        self.assertTrue(support_case.review_required)
+        self.assertIsNotNone(support_case.analysed_at)
+
+        queued = self.client.get("/api/support-cases/?review_required=true")
+        self.assertEqual(queued.status_code, status.HTTP_200_OK)
+        self.assertEqual(queued.data["count"], 1)

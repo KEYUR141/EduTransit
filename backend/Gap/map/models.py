@@ -2,6 +2,7 @@ import uuid
 
 from django.core.exceptions import ValidationError
 from django.db import models
+from pgvector.django import HnswIndex, VectorField
 
 
 class Curriculum(models.Model):
@@ -105,7 +106,11 @@ class ConceptMapping(models.Model):
         Curriculum, on_delete=models.CASCADE, related_name="incoming_mappings"
     )
     source_concept = models.ForeignKey(
-        Concept, on_delete=models.CASCADE, related_name="source_mappings", null=True, blank=True
+        Concept,
+        on_delete=models.CASCADE,
+        related_name="source_mappings",
+        null=True,
+        blank=True,
     )
     destination_concept = models.ForeignKey(
         Concept, on_delete=models.CASCADE, related_name="destination_mappings"
@@ -197,7 +202,9 @@ class Attempt(models.Model):
     class Meta:
         ordering = ["created_at"]
         constraints = [
-            models.UniqueConstraint(fields=["session", "item"], name="one_attempt_per_item")
+            models.UniqueConstraint(
+                fields=["session", "item"], name="one_attempt_per_item"
+            )
         ]
 
     def __str__(self):
@@ -232,12 +239,17 @@ class BridgeStep(models.Model):
     class Meta:
         ordering = ["order"]
         constraints = [
-            models.UniqueConstraint(fields=["plan", "concept"], name="unique_concept_per_plan"),
-            models.UniqueConstraint(fields=["plan", "order"], name="unique_order_per_plan"),
+            models.UniqueConstraint(
+                fields=["plan", "concept"], name="unique_concept_per_plan"
+            ),
+            models.UniqueConstraint(
+                fields=["plan", "order"], name="unique_order_per_plan"
+            ),
         ]
 
     def __str__(self):
         return f"{self.order}. {self.concept}"
+
 
 def create_support_reference():
     return f"GM-{uuid.uuid4().hex[:8].upper()}"
@@ -248,6 +260,18 @@ class SupportCase(models.Model):
         ("student", "Student"),
         ("parent", "Parent or guardian"),
         ("educator", "Educator or counsellor"),
+    ]
+    CONFIDENCE_LEVELS = [
+        ("not_analysed", "Not analysed"),
+        ("low", "Low"),
+        ("medium", "Medium"),
+        ("high", "High"),
+    ]
+    REVIEW_ROUTES = [
+        ("not_routed", "Not routed"),
+        ("provisional_guidance", "Provisional guidance"),
+        ("instructor_review", "Instructor review"),
+        ("specialist_escalation", "Specialist escalation"),
     ]
     CATEGORIES = [
         ("school-change", "School or board change"),
@@ -263,6 +287,7 @@ class SupportCase(models.Model):
         ("gap_analysis", "Gap comparison"),
         ("roadmap", "Support roadmap"),
         ("readiness_review", "Readiness review"),
+        ("instructor_review", "Instructor review"),
     ]
 
     reference = models.CharField(
@@ -281,6 +306,23 @@ class SupportCase(models.Model):
     destination_location = models.CharField(max_length=100, blank=True)
     status = models.CharField(max_length=24, choices=STATUSES, default="received")
     progress_stage = models.PositiveSmallIntegerField(default=1)
+    matched_scenario = models.ForeignKey(
+        "TransitionScenario",
+        on_delete=models.SET_NULL,
+        related_name="matched_support_cases",
+        null=True,
+        blank=True,
+    )
+    analysis_confidence_score = models.FloatField(null=True, blank=True)
+    analysis_confidence_level = models.CharField(
+        max_length=16, choices=CONFIDENCE_LEVELS, default="not_analysed"
+    )
+    review_required = models.BooleanField(default=False)
+    review_route = models.CharField(
+        max_length=32, choices=REVIEW_ROUTES, default="not_routed"
+    )
+    analysis_snapshot = models.JSONField(default=dict, blank=True)
+    analysed_at = models.DateTimeField(null=True, blank=True)
     is_demo = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -290,3 +332,130 @@ class SupportCase(models.Model):
 
     def __str__(self):
         return f"{self.reference}: {self.title or self.get_category_display()}"
+
+
+class TransitionScenario(models.Model):
+    EDUCATION_LEVELS = [
+        ("school", "School"),
+        ("diploma", "Diploma"),
+        ("undergraduate", "Undergraduate"),
+        ("postgraduate", "Postgraduate"),
+        ("professional", "Professional or regulated"),
+    ]
+    RARITY_LEVELS = [
+        ("common", "Common"),
+        ("uncommon", "Uncommon"),
+        ("rare", "Rare"),
+        ("boundary", "Guardrail boundary"),
+    ]
+    REVIEW_STATES = [
+        ("reviewed_demo", "Reviewed demonstration"),
+        ("team_review", "Team review required"),
+        ("source_review", "Official source review required"),
+        ("illustrative", "Illustrative only"),
+    ]
+
+    scenario_id = models.CharField(max_length=12, unique=True)
+    title = models.CharField(max_length=220)
+    description = models.TextField()
+    education_level = models.CharField(max_length=20, choices=EDUCATION_LEVELS)
+    case_type = models.CharField(max_length=60)
+    rarity = models.CharField(max_length=16, choices=RARITY_LEVELS, default="common")
+    learner = models.JSONField(default=dict)
+    source_program = models.JSONField(default=dict)
+    destination_program = models.JSONField(default=dict)
+    learner_evidence = models.JSONField(default=list)
+    destination_requirements = models.JSONField(default=list)
+    expected_results = models.JSONField(default=list)
+    expected_roadmap = models.JSONField(default=list)
+    source_documents = models.JSONField(default=list)
+    guardrails = models.JSONField(default=list)
+    tags = models.JSONField(default=list)
+    synthetic_fields = models.JSONField(default=list)
+    review_status = models.CharField(
+        max_length=24, choices=REVIEW_STATES, default="team_review"
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["scenario_id"]
+
+    def __str__(self):
+        return f"{self.scenario_id}: {self.title}"
+
+
+class AcademicSource(models.Model):
+    SOURCE_TYPES = [
+        ("official_pdf", "Official PDF"),
+        ("official_webpage", "Official webpage"),
+        ("reviewed_fixture", "Reviewed fixture"),
+        ("synthetic_fixture", "Synthetic demonstration fixture"),
+    ]
+    REVIEW_STATES = [
+        ("proposed", "Proposed"),
+        ("reviewed", "Reviewed"),
+        ("approved", "Approved"),
+        ("illustrative", "Illustrative only"),
+    ]
+
+    source_id = models.CharField(max_length=100, unique=True)
+    title = models.CharField(max_length=240)
+    organisation = models.CharField(max_length=180, blank=True)
+    source_type = models.CharField(max_length=32, choices=SOURCE_TYPES)
+    url = models.URLField(blank=True)
+    version = models.CharField(max_length=80, blank=True)
+    retrieved_at = models.DateField(null=True, blank=True)
+    review_status = models.CharField(
+        max_length=20, choices=REVIEW_STATES, default="proposed"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["source_id"]
+
+    def __str__(self):
+        return self.title
+
+
+class EvidenceChunk(models.Model):
+    chunk_id = models.CharField(max_length=140, unique=True)
+    source = models.ForeignKey(
+        AcademicSource, on_delete=models.CASCADE, related_name="chunks"
+    )
+    scenario = models.ForeignKey(
+        TransitionScenario,
+        on_delete=models.CASCADE,
+        related_name="evidence_chunks",
+        null=True,
+        blank=True,
+    )
+    section = models.CharField(max_length=180, blank=True)
+    page = models.PositiveIntegerField(null=True, blank=True)
+    text = models.TextField()
+    canonical_terms = models.JSONField(default=list)
+    metadata = models.JSONField(default=dict)
+    embedding = VectorField(dimensions=384, null=True, blank=True)
+    embedding_model = models.CharField(max_length=180, blank=True)
+    checksum = models.CharField(max_length=64, blank=True)
+    approved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["chunk_id"]
+        indexes = [
+            models.Index(fields=["scenario", "approved"]),
+            models.Index(fields=["source", "approved"]),
+            HnswIndex(
+                name="map_evidence_embedding_hnsw",
+                fields=["embedding"],
+                m=16,
+                ef_construction=64,
+                opclasses=["vector_cosine_ops"],
+            ),
+        ]
+
+    def __str__(self):
+        return self.chunk_id

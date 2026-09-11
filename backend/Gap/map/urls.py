@@ -10,18 +10,24 @@ from .views import (
     SupportCaseViewSet,
     demo_context,
     health,
+    rag_retrieve,
 )
 
 router = DefaultRouter()
 router.register("curricula", CurriculumViewSet, basename="curriculum")
 router.register("concepts", ConceptViewSet, basename="concept")
-router.register("prerequisite-edges", PrerequisiteEdgeViewSet, basename="prerequisite-edge")
+router.register(
+    "prerequisite-edges", PrerequisiteEdgeViewSet, basename="prerequisite-edge"
+)
 router.register("learners", LearnerProfileViewSet, basename="learner")
-router.register("diagnostic-sessions", DiagnosticSessionViewSet, basename="diagnostic-session")
+router.register(
+    "diagnostic-sessions", DiagnosticSessionViewSet, basename="diagnostic-session"
+)
 router.register("support-cases", SupportCaseViewSet, basename="support-case")
 
 urlpatterns = [
     path("health/", health, name="health"),
+    path("rag/retrieve/", rag_retrieve, name="rag-retrieve"),
     path("demo-context/", demo_context, name="demo-context"),
     path("", include(router.urls)),
 ]

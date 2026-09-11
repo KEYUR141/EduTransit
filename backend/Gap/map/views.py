@@ -13,7 +13,9 @@ from .models import (
     LearnerProfile,
     PrerequisiteEdge,
     SupportCase,
+    TransitionScenario,
 )
+from .rag_pipeline import retrieve_evidence
 from .serializers import (
     AnswerSerializer,
     AttemptSerializer,
@@ -26,6 +28,10 @@ from .serializers import (
     HealthSerializer,
     LearnerProfileSerializer,
     PrerequisiteEdgeSerializer,
+    RagRetrieveRequestSerializer,
+    RagRetrieveResponseSerializer,
+    SupportCaseAnalyseRequestSerializer,
+    SupportCaseAnalyseResponseSerializer,
     SupportCaseSerializer,
 )
 from .services import (
@@ -40,7 +46,7 @@ from .services import (
 
 
 class PrototypeAllowAnyMixin:
-    """The hackathon demo is open; replace this with role permissions before deployment."""
+    """Open demo access; replace with role permissions before deployment."""
 
     permission_classes = [AllowAny]
 
@@ -128,7 +134,9 @@ class DiagnosticSessionViewSet(PrototypeAllowAnyMixin, viewsets.ModelViewSet):
                 "attempt": AttemptSerializer(attempt).data,
                 "session_status": session.status,
                 "completed": item is None,
-                "next_question": DiagnosticItemPublicSerializer(item).data if item else None,
+                "next_question": DiagnosticItemPublicSerializer(item).data
+                if item
+                else None,
             },
             status=status.HTTP_201_CREATED,
         )
@@ -149,13 +157,69 @@ class DiagnosticSessionViewSet(PrototypeAllowAnyMixin, viewsets.ModelViewSet):
 class SupportCaseViewSet(PrototypeAllowAnyMixin, viewsets.ModelViewSet):
     queryset = SupportCase.objects.all()
     serializer_class = SupportCaseSerializer
-    filterset_fields = ["category", "status", "is_demo"]
+    filterset_fields = [
+        "category",
+        "status",
+        "is_demo",
+        "review_required",
+        "review_route",
+        "analysis_confidence_level",
+    ]
     search_fields = ["reference", "title", "requester_name", "summary"]
     ordering_fields = ["created_at", "updated_at"]
     http_method_names = ["get", "post", "patch", "head", "options"]
 
     def perform_create(self, serializer):
         serializer.save(status="received", progress_stage=1, is_demo=False)
+
+    @extend_schema(
+        request=SupportCaseAnalyseRequestSerializer,
+        responses=SupportCaseAnalyseResponseSerializer,
+    )
+    @action(detail=True, methods=["post"], url_path="analyse")
+    def analyse(self, request, pk=None):
+        support_case = self.get_object()
+        serializer = SupportCaseAnalyseRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        query = serializer.validated_data.get("query") or (
+            f"{support_case.source_label} to {support_case.destination_label}. "
+            f"{support_case.summary}"
+        )
+        try:
+            analysis = retrieve_evidence(
+                query=query,
+                scenario_id=serializer.validated_data.get("scenario_id"),
+                top_k=serializer.validated_data.get("top_k", 5),
+            )
+        except ValueError as error:
+            return Response({"detail": str(error)}, status=status.HTTP_400_BAD_REQUEST)
+
+        matched = analysis.get("matched_scenario")
+        support_case.matched_scenario = (
+            TransitionScenario.objects.filter(
+                scenario_id=matched["scenario_id"]
+            ).first()
+            if matched
+            else None
+        )
+        support_case.analysis_confidence_score = analysis["confidence"]["score"]
+        support_case.analysis_confidence_level = analysis["confidence"]["level"]
+        support_case.review_required = analysis["review"]["required"]
+        support_case.review_route = analysis["review"]["route"]
+        support_case.analysis_snapshot = analysis
+        support_case.analysed_at = timezone.now()
+        support_case.status = (
+            "instructor_review" if support_case.review_required else "gap_analysis"
+        )
+        support_case.progress_stage = 2 if support_case.review_required else 3
+        support_case.save()
+        return Response(
+            {
+                "case": SupportCaseSerializer(support_case).data,
+                "analysis": analysis,
+            }
+        )
+
 
 @extend_schema(responses=HealthSerializer)
 @api_view(["GET"])
@@ -175,9 +239,13 @@ def health(request):
 @permission_classes([AllowAny])
 def demo_context(request):
     """Give the frontend stable discovery data without hard-coded database IDs."""
-    learner = LearnerProfile.objects.select_related(
-        "source_curriculum", "destination_curriculum"
-    ).order_by("id").first()
+    learner = (
+        LearnerProfile.objects.select_related(
+            "source_curriculum", "destination_curriculum"
+        )
+        .order_by("id")
+        .first()
+    )
     if learner is None:
         return Response(
             {"detail": "Run `python manage.py seed_gapmap_demo` first."},
@@ -200,3 +268,19 @@ def demo_context(request):
             "recommended_target_code": "linear-equations",
         }
     )
+
+
+@extend_schema(
+    request=RagRetrieveRequestSerializer,
+    responses=RagRetrieveResponseSerializer,
+)
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def rag_retrieve(request):
+    serializer = RagRetrieveRequestSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    try:
+        payload = retrieve_evidence(**serializer.validated_data)
+    except ValueError as error:
+        return Response({"detail": str(error)}, status=status.HTTP_400_BAD_REQUEST)
+    return Response(payload)

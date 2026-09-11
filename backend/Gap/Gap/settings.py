@@ -7,9 +7,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env(DEBUG=(bool, True))
 environ.Env.read_env(BASE_DIR / ".env")
 
-SECRET_KEY = env("DJANGO_SECRET_KEY", default="gapmap-demo-key-change-before-deployment")
+SECRET_KEY = env(
+    "DJANGO_SECRET_KEY", default="gapmap-demo-key-change-before-deployment"
+)
 DEBUG = env.bool("DEBUG", default=True)
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1", "testserver"])
+ALLOWED_HOSTS = env.list(
+    "ALLOWED_HOSTS", default=["localhost", "127.0.0.1", "testserver"]
+)
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -17,6 +21,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "django.contrib.postgres",
     "django.contrib.staticfiles",
     "corsheaders",
     "django_filters",
@@ -64,7 +69,9 @@ DATABASES = {
 }
 
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -79,9 +86,22 @@ STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    },
 }
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+RAG_EMBEDDING_MODEL = env(
+    "RAG_EMBEDDING_MODEL",
+    default="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+)
+RAG_EMBEDDING_DEVICE = env("RAG_EMBEDDING_DEVICE", default="cpu")
+RAG_EMBEDDING_LOCAL_ONLY = env.bool("RAG_EMBEDDING_LOCAL_ONLY", default=True)
+RAG_ALLOW_EMBEDDING_FALLBACK = env.bool(
+    "RAG_ALLOW_EMBEDDING_FALLBACK",
+    default=True,
+)
 
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],

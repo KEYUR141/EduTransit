@@ -12,6 +12,7 @@ drf-spectacular>=0.30,<0.31
 # Database and vector search
 psycopg[binary]>=3.2,<4.0
 pgvector>=0.4,<1.0
+sentence-transformers>=6.0,<7.0
 
 # Concept graph and curriculum processing
 networkx>=3.4,<4.0
