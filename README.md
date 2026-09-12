@@ -23,11 +23,11 @@ GapMap identifies unresolved learning evidence when a student changes a board, p
 <table>
   <tr>
     <td align="center" width="33%">
-      <img src="documents/team/profile-pending.svg" width="96" height="96" alt="AI engineering contributor profile pending" /><br />
-      <strong>Profile pending</strong><br />
+      <a href="https://github.com/KEYUR141"><img src="https://github.com/KEYUR141.png?size=160" width="96" height="96" alt="Keyur Sherke" /></a><br />
+      <strong>Keyur Sherke</strong><br />
       <sub>AI Engineering &amp; System Design</sub><br />
       <sub>RAG architecture, embeddings, guardrails, backend integration and overall system design</sub><br />
-      <sub>GitHub link pending</sub>
+      <a href="https://github.com/KEYUR141"><sub>@KEYUR141</sub></a>
     </td>
     <td align="center" width="33%">
       <a href="https://github.com/divyalonare"><img src="https://github.com/divyalonare.png?size=160" width="96" height="96" alt="Divya Lonare" /></a><br />
@@ -70,6 +70,34 @@ GapMap does not replace APAAR, DIKSHA, UDISE+, admission authorities, teachers, 
 | Diagnostic pathway | The backend supports prerequisite diagnostics, gap maps, bridge steps, and reassessment |
 | Demonstration data | 60+ differentiated synthetic transition scenarios include rare and boundary situations |
 
+## Product screenshots
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="screenshots/Frontpage_web.png" alt="GapMap education-continuity portal landing page" width="100%" /><br />
+      <strong>Education-continuity portal</strong><br />
+      <sub>A minimal entry point for learners to understand the service and raise a support request.</sub>
+    </td>
+    <td width="50%" valign="top">
+      <img src="screenshots/Data_Custom_input.png" alt="GapMap custom support-case input interface" width="100%" /><br />
+      <strong>Structured support request</strong><br />
+      <sub>Captures the learner's current programme, intended destination, and transition difficulty.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="screenshots/Custom_input_results_below.png" alt="GapMap evidence report and gap formulation results" width="100%" /><br />
+      <strong>Evidence report and gap formulation</strong><br />
+      <sub>Shows retrieved evidence, confidence, unresolved coverage, and the instructor-review route.</sub>
+    </td>
+    <td width="50%" valign="top">
+      <img src="screenshots/Embedding_map.png" alt="GapMap interactive Three.js embedding map" width="100%" /><br />
+      <strong>Interactive embedding map</strong><br />
+      <sub>Projects approved 384-dimensional evidence embeddings into an explorable Three.js view.</sub>
+    </td>
+  </tr>
+</table>
 ## How it works
 
 ```mermaid
