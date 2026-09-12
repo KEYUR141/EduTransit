@@ -204,6 +204,17 @@ function App() {
   const confidencePercent = Math.round(confidence * 100)
   const analysis = activeCase.analysis_snapshot as RagAnalysis | undefined
   const evidence = Array.isArray(analysis?.results) ? analysis.results : []
+  const evidenceCoveragePercent = analysis?.confidence
+    ? Math.round(analysis.confidence.matched_term_coverage * 100)
+    : null
+  const unresolvedGapPercent = evidenceCoveragePercent == null ? null : 100 - evidenceCoveragePercent
+  const gapStatus = unresolvedGapPercent == null
+    ? 'Awaiting analysis'
+    : unresolvedGapPercent <= 15
+      ? 'Evidence satisfied'
+      : unresolvedGapPercent <= 40
+        ? 'Partial evidence gap'
+        : 'Significant evidence gap'
 
   useEffect(() => {
     let cancelled = false
@@ -426,6 +437,23 @@ function App() {
                 </div>
               </section>
 
+              <section className="gap-formula-panel" aria-labelledby="gap-formula-title">
+                <div className="gap-formula-head">
+                  <div><p className="column-title">Transparent formulation</p><h4 id="gap-formula-title">How the evidence gap is calculated</h4></div>
+                  <span className={`gap-result ${unresolvedGapPercent == null ? 'pending' : unresolvedGapPercent <= 15 ? 'satisfied' : unresolvedGapPercent <= 40 ? 'partial' : 'significant'}`}>{gapStatus}</span>
+                </div>
+                <div className="formula-equation" aria-label="Destination requirement minus verified evidence equals unresolved evidence gap">
+                  <div><small>Destination requirement</small><strong>100%</strong><span>Required evidence baseline</span></div>
+                  <b aria-hidden="true">−</b>
+                  <div><small>Verified evidence coverage</small><strong>{evidenceCoveragePercent == null ? '—' : `${evidenceCoveragePercent}%`}</strong><span>Matched requirement terms</span></div>
+                  <b aria-hidden="true">=</b>
+                  <div className="formula-answer"><small>Unresolved gap</small><strong>{unresolvedGapPercent == null ? '—' : `${unresolvedGapPercent}%`}</strong><span>Needs evidence or support</span></div>
+                </div>
+                <div className="formula-scale" aria-label="Gap classification thresholds">
+                  <span><i className="satisfied" /> 0–15 satisfied</span><span><i className="partial" /> 16–40 partial</span><span><i className="significant" /> 41–100 significant</span><span><i className="review" /> insufficient evidence → instructor</span>
+                </div>
+                <p className="formula-note"><ShieldCheck size={15} /><span><strong>What this means:</strong> the score measures how much required evidence remains unresolved. It is not calculated from embedding similarity and it is not a mark, ability score or admission decision.</span></p>
+              </section>
               {analysis?.confidence && (
                 <section className="evidence-workbench" aria-label="Case evidence and review">
                   <div className="review-tabs" role="tablist" aria-label="Analysis details">

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+  <rect width="160" height="160" fill="#f1f2ed"/>
+  <rect x="1" y="1" width="158" height="158" fill="none" stroke="#151515" stroke-width="2"/>
+  <circle cx="80" cy="61" r="25" fill="#d9ff67" stroke="#151515" stroke-width="2"/>
+  <path d="M35 136c4-30 20-45 45-45s41 15 45 45" fill="#d9ff67" stroke="#151515" stroke-width="2"/>
+  <text x="80" y="151" text-anchor="middle" font-family="monospace" font-size="9" fill="#151515">PROFILE PENDING</text>
+</svg>

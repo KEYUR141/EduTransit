@@ -310,3 +310,22 @@ footer .brand-symbol { background: white; color: var(--ink); }
 .report-actions { align-items: center; padding-top: 2px; }
 .quiet-report-button { padding: 10px 2px; border: 0; border-bottom: 1px solid var(--ink); background: transparent; color: var(--ink); font: 600 9px var(--mono); cursor: pointer; }
 .quiet-report-button:disabled { color: var(--muted); cursor: wait; }
+
+/* Judge-facing evidence-gap formulation */
+.gap-formula-panel { margin: 29px 0; border: 1px solid var(--ink); background: #fff; }
+.gap-formula-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding: 19px 20px; border-bottom: 1px solid var(--ink); }
+.gap-formula-head h4 { margin: 7px 0 0; font-size: 20px; font-weight: 550; letter-spacing: -.035em; }
+.gap-result { flex: none; padding: 7px 9px; border: 1px solid var(--ink); font: 650 8px/1 var(--mono); text-transform: uppercase; }
+.gap-result.satisfied { background: var(--lime); } .gap-result.partial { background: #fff0b8; } .gap-result.significant { background: #f5c7c3; } .gap-result.pending { border-color: var(--line); color: var(--muted); }
+.formula-equation { display: grid; grid-template-columns: minmax(0,1fr) 22px minmax(0,1fr) 22px minmax(0,1fr); align-items: stretch; }
+.formula-equation > div { min-width: 0; display: flex; flex-direction: column; min-height: 137px; padding: 19px; }
+.formula-equation > b { display: grid; place-items: center; color: #777a75; font: 400 25px var(--sans); }
+.formula-equation small, .formula-equation span { color: var(--muted); font: 550 8px/1.35 var(--mono); text-transform: uppercase; }
+.formula-equation strong { margin: auto 0 8px; font-size: clamp(32px,3vw,44px); font-weight: 460; letter-spacing: -.06em; }
+.formula-equation .formula-answer { background: var(--soft); border-left: 1px solid var(--line); }
+.formula-scale { display: flex; flex-wrap: wrap; gap: 16px; padding: 12px 20px; border-top: 1px solid var(--line); color: #60635e; font: 550 8px var(--mono); text-transform: uppercase; }
+.formula-scale span { display: inline-flex; align-items: center; gap: 6px; }
+.formula-scale i { width: 7px; height: 7px; border-radius: 50%; background: #aaa; } .formula-scale i.satisfied { background: #78a91f; } .formula-scale i.partial { background: #d89722; } .formula-scale i.significant { background: var(--red); } .formula-scale i.review { border: 1px solid var(--ink); background: white; }
+.formula-note { display: flex; align-items: flex-start; gap: 9px; margin: 0; padding: 15px 20px; border-top: 1px solid var(--ink); color: var(--muted); font-size: 10px; line-height: 1.5; }
+.formula-note svg { flex: none; color: var(--ink); } .formula-note strong { color: var(--ink); }
+@media (max-width: 650px) { .formula-equation { grid-template-columns: 1fr; } .formula-equation > b { height: 25px; } .formula-equation > div { min-height: 105px; } .formula-equation .formula-answer { border-top: 1px solid var(--line); border-left: 0; } .gap-formula-head { display: block; } .gap-result { display: inline-block; margin-top: 13px; } }
